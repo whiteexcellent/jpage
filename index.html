@@ -1,0 +1,1158 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Janto Bağlantıları</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap">
+<style>
+/* Layout: sabit karanlık zemin üzerinde karakter seçim sahnesi. Ortada logo, sponsorluk satırı, YouTube vitrin kartı ve beş bağlantı; iki yanda üçer karakter, altta köpek, sol önde tabut.
+   Dar ekranda sahne, bağlantıların altında yatay kaydırılan bir şeride dönüşür. Tek tema: koyu, soft altın sarısı; mor ve mavi sadece küçük fışkırtmalar. */
+:root {
+  color-scheme: dark;
+  --bg: #080604;
+  --ink: #f7edd0;
+  --muted: #bba97c;
+  --card: rgba(24, 18, 10, .90);
+  --card-fg: #f8f0da;
+  --card-sub: #c4b389;
+  --card-line: rgba(232, 200, 114, .24);
+  --tile: rgba(232, 200, 114, .10);
+  --accent: #e6c36a;
+  --accent-hi: #f5dd93;
+  --accent-lo: #b98f3a;
+  --accent-fg: #1b1406;
+  --accent-soft: #f0d58c;
+  --violet: #8b5cf6;
+  --blue: #4f8cff;
+  --tea: #d98a3a;
+  --pill: rgba(24, 18, 10, .88);
+  --pill-fg: #ecd9a3;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+}
+
+/* ---------- Zemin ---------- */
+.floor {
+  position: fixed; inset: -3%; z-index: 0; pointer-events: none;
+  background: url("img/floor.webp") 50% 100% / cover no-repeat, var(--bg);
+  transform: translate(calc(var(--fx, 0) * 1px), calc(var(--fy, 0) * 1px));
+  will-change: transform;
+}
+.grade {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 60% at 50% 32%, rgba(230, 195, 106, .13), transparent 72%),
+    radial-gradient(ellipse 16% 24% at 8% 30%, rgba(139, 92, 246, .10), transparent 70%),
+    radial-gradient(ellipse 16% 24% at 93% 38%, rgba(79, 140, 255, .09), transparent 70%),
+    linear-gradient(180deg, rgba(8, 6, 3, .55) 0%, rgba(8, 6, 3, 0) 46%),
+    radial-gradient(ellipse 120% 90% at 50% 55%, transparent 55%, rgba(4, 3, 1, .74) 100%);
+}
+.fog { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.fog::before, .fog::after {
+  content: ""; position: absolute; left: -20%; width: 140%; height: 34%; top: 40%;
+  background:
+    radial-gradient(ellipse 18% 50% at 18% 50%, rgba(230, 195, 106, .11), transparent 70%),
+    radial-gradient(ellipse 22% 60% at 52% 40%, rgba(139, 92, 246, .07), transparent 70%),
+    radial-gradient(ellipse 16% 50% at 84% 55%, rgba(79, 140, 255, .08), transparent 70%);
+  animation: drift 70s ease-in-out infinite alternate;
+}
+.fog::after { top: 52%; opacity: .7; animation-duration: 95s; animation-direction: alternate-reverse; }
+@keyframes drift { from { transform: translateX(-4%); } to { transform: translateX(4%); } }
+
+/* ---------- Sahne (masaüstü) ---------- */
+.persp {
+  position: fixed; inset: 0; z-index: 1;
+  perspective: 1800px; perspective-origin: 50% 60%;
+  pointer-events: none; overflow: hidden;
+}
+.lane-title { display: none; }
+.world {
+  position: absolute; left: 50%; bottom: 0; width: 1920px; height: 1080px; margin-left: -960px;
+  transform-origin: 50% 100%;
+  transform: scale(var(--s, 1)) rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg));
+  transform-style: preserve-3d;
+  --m: .58;
+}
+.char {
+  position: absolute;
+  left: calc(var(--cx) * 1px);
+  top: calc((var(--feet) - var(--h)) * 1px);
+  width: calc(var(--h) * var(--ar) * 1px);
+  height: calc(var(--h) * 1px);
+  margin-left: calc(var(--h) * var(--ar) * -.5px);
+  transform: translate(calc(var(--dx, 0) * 1px), calc(var(--dy, 0) * 1px)) translateZ(calc(var(--tz) * 1px)) scale(var(--zs, 1));
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.sprite {
+  position: absolute; inset: 0;
+  transform-origin: 50% 100%;
+  transition: transform .28s cubic-bezier(.2, .8, .2, 1);
+  animation: rise .8s cubic-bezier(.2, .8, .2, 1) backwards;
+}
+.char:nth-child(1) .sprite { animation-delay: .05s; }
+.char:nth-child(2) .sprite { animation-delay: .10s; }
+.char:nth-child(3) .sprite { animation-delay: .15s; }
+.char:nth-child(4) .sprite { animation-delay: .20s; }
+.char:nth-child(5) .sprite { animation-delay: .25s; }
+.char:nth-child(6) .sprite { animation-delay: .30s; }
+.char:nth-child(7) .sprite { animation-delay: .35s; }
+.char:nth-child(8) .sprite { animation-delay: .40s; }
+@keyframes rise { from { transform: translateY(14px); } to { transform: none; } }
+
+.fig, .ref {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  display: block; user-select: none; -webkit-user-drag: none; pointer-events: none;
+}
+.fig { transition: filter .25s ease, opacity .25s ease; filter: brightness(.97); }
+.ref {
+  top: 100%; opacity: .28; filter: blur(1.2px); transform: scaleY(-1);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 38%);
+  mask-image: linear-gradient(to top, #000 0%, transparent 38%);
+}
+.shadow {
+  position: absolute; left: 50%; bottom: -3.4%; width: 132%; height: 9%; margin-left: -66%;
+  border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .78), transparent);
+  filter: blur(4px); pointer-events: none;
+}
+.pad {
+  position: absolute; left: 50%; bottom: -3.6%; width: 150%; height: 10%; margin-left: -75%;
+  border-radius: 50%; border: 2px solid rgba(240, 213, 140, .92);
+  box-shadow: 0 0 22px rgba(230, 195, 106, .6), 0 0 34px rgba(139, 92, 246, .28), inset 0 0 22px rgba(230, 195, 106, .3);
+  opacity: 0; transform: scale(.82); transition: opacity .25s ease, transform .35s cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;
+}
+.glow {
+  position: absolute; inset: -8% -70% -4% -70%;
+  background:
+    radial-gradient(closest-side at 50% 56%, rgba(230, 195, 106, .30) 0%, rgba(230, 195, 106, .12) 55%, transparent 100%),
+    radial-gradient(closest-side at 76% 68%, rgba(139, 92, 246, .17), transparent 100%),
+    radial-gradient(closest-side at 24% 66%, rgba(79, 140, 255, .13), transparent 100%);
+  -webkit-mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  opacity: 0; transition: opacity .3s ease; pointer-events: none;
+}
+.char-dog .dog-sleep { display: none; }
+.char-dog.asleep .dog-sit { display: none; }
+.char-dog.asleep .dog-sleep { display: block; }
+.char-coffin .pad { display: none; }
+.char-coffin .glow { inset: -40% -20% -30% -20%; }
+.char-coffin .fig-open { opacity: 0; }
+
+.hit {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer;
+  pointer-events: auto; -webkit-tap-highlight-color: transparent;
+}
+.hit:focus { outline: none; }
+
+.tag {
+  position: absolute; left: 50%; bottom: calc(100% + 16px);
+  padding: calc(6px / var(--s, 1)) calc(11px / var(--s, 1));
+  font: 500 calc(13px / var(--s, 1)) / 1 var(--font-mono);
+  letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+  color: var(--pill-fg); background: rgba(18, 13, 6, .93);
+  border: 1px solid rgba(232, 200, 114, .5); border-radius: 6px;
+  transform: translate(-50%, 6px); opacity: 0; pointer-events: none;
+  transition: opacity .2s ease, transform .25s cubic-bezier(.2, .8, .2, 1);
+}
+.tag::after {
+  content: ""; position: absolute; left: 50%; top: 100%; width: 8px; height: 8px; margin: -5px 0 0 -4px;
+  background: inherit; border: inherit; border-top: 0; border-left: 0; transform: rotate(45deg);
+}
+.tag--right { left: calc(100% + 18px); bottom: 24%; transform: translate(-6px, 0); }
+.tag--right::after { left: 0; top: 50%; margin: -4px 0 0 -5px; transform: rotate(135deg); }
+
+.char.active .sprite { transform: translateY(-7px); }
+.char.active .fig { filter: brightness(1.14) drop-shadow(0 0 8px rgba(245, 221, 147, .65)) drop-shadow(0 0 26px rgba(139, 92, 246, .38)); }
+.char.active .pad, .char.active .glow { opacity: 1; transform: none; }
+.char.active .tag { opacity: 1; transform: translate(-50%, 0); }
+.char.active .tag--right { transform: translate(0, 0); }
+.char-coffin.active .sprite { transform: none; }
+.char-coffin.active .fig-closed { opacity: 0; }
+.char-coffin.active .fig-open { opacity: 1; }
+.world.has-active .char:not(.active) .fig { filter: brightness(.52) saturate(.8); }
+
+/* ---------- Sütun ---------- */
+main {
+  position: relative; z-index: 3;
+  width: min(26.25em, 28vw); margin: 0 auto;
+  font-size: clamp(11.5px, 1.48vh, 16px);
+  padding-top: 1.1em; padding-bottom: .2em;
+  display: flex; flex-direction: column; align-items: center;
+}
+.hero { display: flex; flex-direction: column; align-items: center; gap: .35em; margin-bottom: .8em; position: relative; width: 100%; }
+.logo-wrap { position: relative; width: 4.5em; height: 5.2em; display: flex; align-items: center; justify-content: center; margin-bottom: .1em; }
+.logo-wrap::before {
+  content: ""; position: absolute; inset: -22%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(230, 195, 106, .26), rgba(139, 92, 246, .08) 62%, transparent 74%);
+  animation: aura 7s ease-in-out infinite alternate;
+}
+.logo {
+  position: relative; display: block; height: 5.2em; width: auto; max-width: none;
+  filter: drop-shadow(0 .15em .5em rgba(0, 0, 0, .7)) drop-shadow(0 0 .7em rgba(230, 195, 106, .38));
+}
+@keyframes aura { from { transform: scale(.94); opacity: .75; } to { transform: scale(1.06); opacity: 1; } }
+.spurt { position: absolute; left: 50%; top: 24%; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.spurt i {
+  position: absolute; left: 0; top: 0; border-radius: 50%; opacity: 0;
+  width: var(--sz); height: var(--sz); margin: calc(var(--sz) / -2) 0 0 calc(var(--sz) / -2);
+  background: var(--c); box-shadow: 0 0 .7em var(--c);
+  animation: spurt 8s cubic-bezier(.2, .7, .3, 1) var(--dl) infinite;
+}
+@keyframes spurt {
+  0% { transform: translate(0, 0) scale(.3); opacity: 0; }
+  3% { opacity: 1; }
+  15% { transform: translate(var(--x), var(--y)) scale(1); opacity: 1; }
+  29% { transform: translate(var(--x2), var(--y2)) scale(.5); opacity: 0; }
+  100% { transform: translate(var(--x2), var(--y2)) scale(.5); opacity: 0; }
+}
+
+h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 700;
+  display: inline-block; padding: .08em .2em .1em; margin: -.08em -.2em -.1em;
+  font-size: 2.8em; letter-spacing: .12em; line-height: 1.1;
+  color: #efd488;
+  background: linear-gradient(180deg, #fff3c6 0%, #f0d487 48%, #cfa84f 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  text-rendering: geometricPrecision; -webkit-font-smoothing: antialiased;
+}
+.tagline { margin: 0; font-family: var(--font-mono); font-size: .78em; color: var(--muted); letter-spacing: .02em; text-align: center; }
+.contact {
+  margin: .35em 0 0; display: inline-flex; align-items: center; justify-content: center; gap: .55em;
+  padding: .5em 1em; border-radius: 999px; max-width: 100%;
+  background: rgba(232, 200, 114, .07); border: 1px solid rgba(232, 200, 114, .26);
+  font-size: .78em; line-height: 1.25; color: var(--card-sub); text-align: center;
+}
+.contact-h { color: var(--accent-soft); letter-spacing: .04em; font-weight: 800; }
+.contact { text-align: left; }
+.contact svg { flex: none; width: 1.3em; height: 1.3em; color: var(--accent); }
+.contact a {
+  color: var(--accent-hi); font-weight: 700; text-decoration: underline; text-decoration-color: rgba(245, 221, 147, .45);
+  text-decoration-thickness: 1.5px; text-underline-offset: .22em; transition: color .15s ease, text-decoration-color .15s ease;
+}
+.contact a:hover { color: #fff3c6; text-decoration-color: var(--violet); }
+.contact a:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 3px; border-radius: 3px; }
+
+.links { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: .42em; }
+
+/* YouTube vitrin kartı */
+.yt-card {
+  position: relative; width: 100%; padding: .45em; border-radius: 1.05em; overflow: hidden;
+  background: linear-gradient(180deg, rgba(38, 29, 14, .95), rgba(20, 15, 8, .95));
+  border: 1px solid rgba(232, 200, 114, .4);
+  box-shadow: 0 .6em 1.6em rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 236, 170, .14);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.yt-card::before {
+  content: ""; position: absolute; right: -2.4em; top: -2.4em; width: 7.5em; height: 7.5em; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 42% 58%, rgba(139, 92, 246, .34), rgba(79, 140, 255, .16) 46%, transparent 70%);
+}
+.yt-thumb {
+  position: relative; display: block; aspect-ratio: 24 / 9; border-radius: .65em; overflow: hidden;
+  background: #0b0805; border: 1px solid rgba(232, 200, 114, .28); text-decoration: none; color: inherit;
+  isolation: isolate;
+}
+.yt-thumb:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.yt-ph {
+  position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden;
+  background:
+    radial-gradient(ellipse 50% 90% at 50% 55%, rgba(230, 195, 106, .24), transparent 70%),
+    radial-gradient(ellipse 30% 60% at 18% 80%, rgba(139, 92, 246, .22), transparent 70%),
+    radial-gradient(ellipse 30% 60% at 84% 24%, rgba(79, 140, 255, .18), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, .025) 0 2px, transparent 2px 9px),
+    #0e0a05;
+}
+.yt-ph img { position: absolute; top: 7%; left: 50%; transform: translateX(-50%); height: 86%; width: auto; max-width: none; display: block; filter: drop-shadow(0 0 .8em rgba(230, 195, 106, .35)); }
+.yt-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
+.yt-thumb::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 55%; z-index: 1; pointer-events: none;
+  background: linear-gradient(transparent, rgba(6, 4, 1, .72));
+}
+.yt-thumb::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%; z-index: 4; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 240, 190, .28), transparent); transform: skewX(-18deg);
+}
+.yt-card:hover .yt-thumb::before { animation: shine .9s ease; }
+@keyframes shine { from { left: -40%; } to { left: 130%; } }
+.yt-card:hover .yt-img { transform: scale(1.05); }
+.film {
+  position: absolute; top: 0; bottom: 0; width: 1em; z-index: 3; pointer-events: none;
+  background: #0a0704 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='26'%3E%3Crect x='4' y='6' width='8' height='13' rx='2.4' fill='%23e6c36a' fill-opacity='.8'/%3E%3C/svg%3E") 50% 0 / 100% 1.45em repeat-y;
+}
+.film-l { left: 0; border-right: 1px solid rgba(232, 200, 114, .3); }
+.film-r { right: 0; border-left: 1px solid rgba(232, 200, 114, .3); }
+.yt-badge {
+  position: absolute; left: 1.45em; top: .55em; z-index: 5; display: inline-flex; align-items: center; gap: .45em;
+  padding: .32em .65em; border-radius: 999px; background: rgba(10, 7, 3, .8); color: var(--accent-hi);
+  border: 1px solid rgba(232, 200, 114, .42);
+  font: 500 .66em/1 var(--font-mono); letter-spacing: .13em; text-transform: uppercase;
+}
+.yt-badge .dot { width: .6em; height: .6em; border-radius: 50%; background: var(--accent); box-shadow: 0 0 .7em var(--accent); animation: blink 1.8s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.yt-new {
+  margin-left: .15em; padding: .22em .5em; border-radius: 99px; letter-spacing: .1em; font-weight: 700; color: #241a05;
+  background: linear-gradient(135deg, #f8e5a3 0%, #e6c36a 52%, #c99a38 100%);
+  border: 1px solid rgba(255, 239, 184, .72);
+  box-shadow: 0 0 .65em rgba(230, 195, 106, .22);
+}
+.yt-play {
+  position: absolute; left: 50%; top: 50%; z-index: 5; width: 3.1em; height: 3.1em; margin: -1.55em 0 0 -1.55em;
+  border-radius: 50%; display: grid; place-items: center; color: var(--accent-fg);
+  background: linear-gradient(160deg, var(--accent-hi), #d9ae49);
+  box-shadow: 0 0 0 .32em rgba(232, 200, 114, .24), 0 .4em 1.2em rgba(0, 0, 0, .55);
+  transition: transform .2s ease;
+}
+.yt-play::after {
+  content: ""; position: absolute; inset: -.3em; border-radius: 50%; border: 2px solid rgba(240, 213, 140, .55);
+  animation: ping 2.6s ease-out infinite;
+}
+@keyframes ping { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.55); opacity: 0; } }
+.yt-play svg { width: 1.25em; height: 1.25em; margin-left: .12em; display: block; }
+.yt-card:hover .yt-play { transform: scale(1.08); }
+.yt-bar { position: absolute; left: 1.4em; right: 1.4em; bottom: .5em; z-index: 5; height: .2em; border-radius: 99px; background: rgba(255, 255, 255, .22); overflow: hidden; }
+.yt-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-hi), var(--violet), var(--blue)); }
+.yt-card:hover .yt-bar i { animation: bar 4.5s linear infinite; }
+@keyframes bar { from { width: 0; } to { width: 100%; } }
+.yt-body { position: relative; display: flex; flex-direction: column; gap: .28em; padding: .6em .3em .1em; }
+.yt-title {
+  margin: 0; font: 400 .98em/1.25 var(--font-display); color: #fbf1cf; text-wrap: balance;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.yt-meta { margin: 0; display: flex; align-items: center; gap: .55em; font: 400 .72em/1.2 var(--font-mono); color: var(--card-sub); }
+.yt-meta svg { flex: none; width: 1.7em; height: 1.2em; }
+.yt-actions { position: relative; display: grid; grid-template-columns: 1.4fr 1fr; gap: .42em; margin-top: .5em; }
+.yt-btn {
+  min-height: 2.6em; padding: 0 .8em; border-radius: .7em; text-decoration: none; text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: .5em;
+  font-weight: 700; font-size: .86em; line-height: 1.1; color: #f6e7b4;
+  background: rgba(232, 200, 114, .08); border: 1px solid rgba(232, 200, 114, .4);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.yt-btn:hover { transform: translateY(-1px); background: rgba(232, 200, 114, .16); border-color: rgba(245, 221, 147, .7); }
+.yt-btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.yt-btn svg { width: 1em; height: 1em; flex: none; }
+.yt-btn--main {
+  color: var(--accent-fg); background: linear-gradient(180deg, #f6df97, #dcb050);
+  border-color: rgba(255, 240, 190, .65); box-shadow: 0 .25em .8em rgba(230, 195, 106, .2);
+}
+.yt-btn--main:hover { background: linear-gradient(180deg, #fbe8a8, #e4b95a); }
+.yt-card[data-state="loading"] .yt-title, .yt-card[data-state="loading"] .yt-when { opacity: .55; }
+
+/* Diğer bağlantılar */
+.link {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: .85em;
+  padding: .45em .95em .45em .6em; min-height: 3em;
+  background: var(--card); color: var(--card-fg);
+  border: 1px solid var(--card-line); border-radius: .85em;
+  text-decoration: none;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .35), 0 .5em 1.1em rgba(0, 0, 0, .35);
+  transition: transform .16s ease, border-color .16s ease;
+}
+.link::after {
+  content: ""; position: absolute; right: -1em; top: 50%; width: 4.2em; height: 4.2em; margin-top: -2.1em;
+  border-radius: 50%; border: 3px solid var(--tea); opacity: .15;
+  box-shadow: 0 0 0 5px rgba(217, 138, 58, .1); pointer-events: none;
+}
+.link::before {
+  content: ""; position: absolute; left: -1.2em; bottom: -1.6em; width: 3.6em; height: 3.6em; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(139, 92, 246, .22), rgba(79, 140, 255, .1) 55%, transparent 72%);
+  opacity: 0; transition: opacity .25s ease;
+}
+.link:hover { transform: translateY(-2px); border-color: rgba(245, 221, 147, .6); }
+.link:hover::before { opacity: 1; }
+.link:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 3px; }
+.tile { flex: none; width: 2.3em; height: 2.3em; border-radius: .65em; background: var(--tile); display: grid; place-items: center; position: relative; z-index: 1; }
+.tile img { width: 1.75em; height: 1.75em; display: block; object-fit: contain; }
+.yt-meta img { width: 1.5em; height: 1.5em; flex: none; display: block; }
+.txt { display: flex; flex-direction: column; gap: .1em; min-width: 0; flex: 1; position: relative; z-index: 1; }
+.txt b { font-weight: 700; font-size: 1em; line-height: 1.2; }
+.txt small { font-size: .76em; color: var(--card-sub); line-height: 1.3; overflow-wrap: anywhere; }
+.go { flex: none; width: 1em; height: 1em; opacity: .8; color: var(--accent); position: relative; z-index: 1; }
+.go svg { width: 100%; height: 100%; display: block; }
+
+.stamp {
+  position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(14px + env(safe-area-inset-top, 0px)); z-index: 3;
+  display: inline-flex; align-items: center; gap: .45em; white-space: pre;
+  padding: 2px 0; border: 0; border-radius: 0; background: transparent; color: var(--pill-fg);
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .11em; text-transform: uppercase;
+  opacity: .56; pointer-events: none;
+}
+
+/* ---------- Onay penceresi ---------- */
+dialog#go {
+  width: min(92vw, 26em); padding: 0; border: 1px solid rgba(232, 200, 114, .4); border-radius: 20px;
+  background: linear-gradient(180deg, #221a0d 0%, #130e06 100%); color: var(--card-fg);
+  font: 16px/1.4 var(--font-body);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .7), 0 0 0 1px rgba(0, 0, 0, .45);
+  overflow: hidden;
+}
+dialog#go[open] { animation: pop .22s cubic-bezier(.2, .8, .2, 1); }
+dialog#go::backdrop { background: rgba(4, 3, 1, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+@keyframes pop { from { transform: translateY(10px) scale(.97); } to { transform: none; } }
+.go-card { position: relative; padding: 24px 22px 20px; display: flex; flex-direction: column; gap: 14px; }
+.go-card::after {
+  content: ""; position: absolute; right: -34px; top: -34px; width: 120px; height: 120px; border-radius: 50%;
+  border: 5px solid var(--tea); opacity: .16; box-shadow: 0 0 0 9px rgba(217, 138, 58, .08); pointer-events: none;
+}
+.go-card::before {
+  content: ""; position: absolute; left: -30px; bottom: -40px; width: 130px; height: 130px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(139, 92, 246, .22), rgba(79, 140, 255, .1) 55%, transparent 72%);
+}
+.go-who { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+@media (min-width: 900px) and (min-aspect-ratio: 6/5) and (min-height: 660px) {
+  .tile { width: 2.6em; height: 2.6em; background: transparent; }
+  .tile img { width: 2.5em; height: 2.5em; filter: drop-shadow(0 .1em .25em rgba(0, 0, 0, .5)); }
+  .link { padding: .3em .95em .3em .5em; }
+}
+.go-photo {
+  flex: none; width: 64px; height: 64px; border-radius: 50%; overflow: hidden;
+  border: 2px solid var(--accent); background: #0d0904; box-shadow: 0 0 0 5px rgba(230, 195, 106, .18);
+}
+.go-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; }
+.go-photo.dog img { object-position: 50% 12%; }
+.go-photo.contain img { object-fit: contain; object-position: 50% 50%; padding: 6px; }
+.go-name { font: 500 12px/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent-soft); }
+.go-eyebrow { display: flex; align-items: center; gap: 6px; font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.go-eyebrow svg { width: 16px; height: 16px; }
+#go-title { margin: 0; font: 400 24px/1.15 var(--font-display); text-wrap: balance; position: relative; z-index: 1; }
+.go-url {
+  margin: 0; padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, .34); border: 1px solid rgba(232, 200, 114, .24);
+  display: flex; flex-direction: column; gap: 2px; min-width: 0; position: relative; z-index: 1;
+}
+.go-url b { font: 600 15px/1.25 var(--font-mono); color: #fbf1cf; overflow-wrap: anywhere; }
+.go-url small { font: 400 12px/1.3 var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.go-ask { margin: 0; font-size: 16px; color: var(--card-sub); position: relative; z-index: 1; }
+.go-actions { display: flex; gap: 10px; margin-top: 4px; position: relative; z-index: 1; }
+.btn {
+  flex: 1; min-height: 46px; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(232, 200, 114, .34);
+  font: 600 15px/1 var(--font-body); cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(232, 200, 114, .08); color: var(--card-fg);
+  transition: transform .15s ease, background .15s ease;
+}
+.btn:hover { transform: translateY(-1px); background: rgba(232, 200, 114, .16); }
+.btn:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.btn.primary { background: linear-gradient(180deg, #f6df97, #dcb050); border-color: rgba(255, 240, 190, .6); color: var(--accent-fg); }
+.btn.primary:hover { background: linear-gradient(180deg, #fbe8a8, #e4b95a); }
+.btn[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+
+/* ---------- Dar ekran / dikey: sahne yatay şerit olur ---------- */
+@media (max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px) {
+  body { background: radial-gradient(ellipse 90% 40% at 50% 0%, #2a2112 0%, transparent 70%), var(--bg); }
+  .floor, .grade, .fog { display: none; }
+  main { width: 100%; max-width: 26.25em; font-size: 16px; padding-top: 1.7em; }
+  .stamp { position: static; margin: 22px auto 28px; width: fit-content; display: flex; }
+  .persp {
+    position: relative; inset: auto; z-index: 1; perspective: none; overflow: visible; pointer-events: auto;
+    width: 100%; max-width: 1100px; margin: 26px auto 0;
+  }
+  .lane-title {
+    display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 10px;
+    font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--pill-fg);
+  }
+  .lane-title span { color: var(--muted); letter-spacing: .06em; text-transform: none; }
+  .world {
+    position: relative; left: auto; bottom: auto; width: auto; height: auto; margin: 0;
+    transform: none !important; transform-style: flat;
+    display: flex; align-items: flex-end; gap: 22px;
+    overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+    padding: 64px 22px 56px; border-radius: 18px;
+    border: 1px solid var(--card-line);
+    background:
+      linear-gradient(180deg, #080604 0%, rgba(8, 6, 4, 0) 40%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(230, 195, 106, .12), transparent 70%),
+      url("img/floor.webp") 50% 100% / cover no-repeat, var(--bg);
+    scroll-snap-type: x proximity; scrollbar-width: thin;
+  }
+  .char {
+    position: relative; left: auto; top: auto; margin: 0; flex: none; transform: none;
+    width: calc(var(--h) * var(--ar) * var(--m) * 1px); height: calc(var(--h) * var(--m) * 1px);
+    scroll-snap-align: center;
+  }
+  .ref { display: none; }
+  .tag {
+    left: 50%; top: calc(100% + 12px); bottom: auto; opacity: .95; transform: translate(-50%, 0);
+    padding: 5px 8px; font-size: 10px; line-height: 1.25; text-align: center;
+    white-space: normal; width: max-content; max-width: calc(100% + 22px);
+  }
+  .tag::after { display: none; }
+  .tag--right { left: 50%; bottom: auto; transform: translate(-50%, 0); }
+  .char.active .tag--right { transform: translate(-50%, 0); }
+  .char-coffin .glow { inset: -30% -10% -20% -10%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fog::before, .fog::after, .sprite, .logo-wrap::before, .yt-badge .dot, .yt-play::after, .yt-card:hover .yt-bar i, .yt-card:hover .yt-thumb::before, dialog#go[open] { animation: none; }
+  .spurt { display: none; }
+  .sprite, .fig, .pad, .glow, .tag, .link, .yt-img, .yt-play, .yt-btn { transition: none; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="ig" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#fdc468"/>
+      <stop offset=".45" stop-color="#e1306c"/>
+      <stop offset="1" stop-color="#7b3fe4"/>
+    </linearGradient>
+    <symbol id="glass" viewBox="0 0 28 30">
+      <path d="M7 7h14l-1.5 13.5a3.2 3.2 0 0 1-3.2 2.8h-4.6a3.2 3.2 0 0 1-3.2-2.8z" fill="#d98a3a" fill-opacity=".9"/>
+      <path d="M7 7h14l-.5 4.5H7.5z" fill="#fff" fill-opacity=".25"/>
+      <path d="M7 7h14l-1.5 13.5a3.2 3.2 0 0 1-3.2 2.8h-4.6a3.2 3.2 0 0 1-3.2-2.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <ellipse cx="14" cy="26.6" rx="10" ry="2.3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="arrow-out" viewBox="0 0 16 16"><path d="M4.5 11.5l7-7M5.5 4.5h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="yt-icon" viewBox="0 0 32 22"><rect x="0" y="0" width="32" height="22" rx="6.5" fill="#ff2d2d"/><path d="M13 6l9 5-9 5z" fill="#fff"/></symbol>
+  </defs>
+</svg>
+
+<div class="floor" id="floor" aria-hidden="true"></div>
+<div class="grade" aria-hidden="true"></div>
+<div class="fog" aria-hidden="true"></div>
+
+<div class="stamp">© <span id="yr">2026</span> Janto · Tüm hakları saklıdır</div>
+
+<main>
+  <header class="hero">
+    <div class="logo-wrap">
+      <img class="logo" src="img/logo.webp" alt="Janto logosu: taçlı J harfi" width="481" height="560">
+    </div>
+    <h1>JANTO</h1>
+    <p class="tagline">&gt; demli fikirler, taze yapımlar</p>
+    <!-- Sponsorluk satırı: mail adresi ve konu başlığı aşağıdaki href içinde, metnin içine gizli -->
+    <p class="contact">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.6"/><path d="M3.8 7.2L12 13.2l8.2-6"/></svg>
+      <span><b class="contact-h">Sponsorluk / İşbirliği</b><br>Sponsorluk ve işbirliği için: <a href="mailto:jantokick@gmail.com">jantokick@gmail.com</a></span>
+    </p>
+  </header>
+
+  <ul class="links">
+    <li>
+      <div class="yt-card" id="yt" data-state="demo">
+        <a class="yt-thumb" id="yt-thumb" href="#" data-yt="video" aria-label="Son videoyu izle">
+          <span class="yt-ph" id="yt-ph" aria-hidden="true"><img src="img/logo.webp" alt=""></span>
+          <img class="yt-img" id="yt-img" alt="" hidden>
+          <span class="film film-l" aria-hidden="true"></span><span class="film film-r" aria-hidden="true"></span>
+          <span class="yt-badge"><i class="dot"></i>Son video<b class="yt-new" id="yt-new" hidden>Yeni</b></span>
+          <span class="yt-play" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 1.8v12.4a.5.5 0 0 0 .76.43l10-6.2a.5.5 0 0 0 0-.86l-10-6.2a.5.5 0 0 0-.76.43z" fill="currentColor"/></svg></span>
+          <span class="yt-bar" aria-hidden="true"><i></i></span>
+        </a>
+        <div class="yt-body">
+          <h3 class="yt-title" id="yt-title">Son videon burada otomatik görünecek</h3>
+          <p class="yt-meta"><img src="img/ic_yt.webp" alt="" width="160" height="160" decoding="async"><span class="yt-when" id="yt-when">Abone olmayı unutma!</span></p>
+        </div>
+        <div class="yt-actions">
+          <a class="yt-btn yt-btn--main" id="yt-watch" href="#" data-yt="video"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 1.8v12.4a.5.5 0 0 0 .76.43l10-6.2a.5.5 0 0 0 0-.86l-10-6.2a.5.5 0 0 0-.76.43z" fill="currentColor"/></svg>Son videoyu izle</a>
+          <a class="yt-btn" id="yt-chan" href="#" data-yt="channel">Kanala git<svg aria-hidden="true"><use href="#arrow-out"/></svg></a>
+        </div>
+      </div>
+    </li>
+    <li>
+      <a class="link" href="#" data-link="instagram">
+        <span class="tile">
+          <img src="img/ic_instagram.webp" alt="" width="160" height="160" decoding="async">
+        </span>
+        <span class="txt"><b>Instagram</b><small>İnstagram hesabını takip et</small></span>
+        <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
+      </a>
+    </li>
+    <li>
+      <a class="link" href="#" data-link="tiktok">
+        <span class="tile">
+          <img src="img/ic_tiktok.webp" alt="" width="160" height="160" decoding="async">
+        </span>
+        <span class="txt"><b>TikTok</b><small>Tiktok hesabını takip et</small></span>
+        <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
+      </a>
+    </li>
+    <li>
+      <a class="link" href="#" data-link="kick">
+        <span class="tile">
+          <img src="img/ic_kick.webp" alt="" width="160" height="160" decoding="async">
+        </span>
+        <span class="txt"><b>Kick</b><small>Kick kanalımı takip et</small></span>
+        <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
+      </a>
+    </li>
+    <li>
+      <a class="link" href="#" data-link="discord">
+        <span class="tile">
+          <img src="img/ic_discord.webp" alt="" width="160" height="160" decoding="async">
+        </span>
+        <span class="txt"><b>Discord</b><small>Topluluğumuza katıl ve eğlenceye devam et</small></span>
+        <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
+      </a>
+    </li>
+    <li>
+      <a class="link" href="#" data-link="jantolab">
+        <span class="tile">
+          <img src="img/ic_jantolab.webp" alt="" width="160" height="160" decoding="async">
+        </span>
+        <span class="txt"><b>JantoLab</b><small>Fivem premium scriptlerin tek adresi</small></span>
+        <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
+      </a>
+    </li>
+  </ul>
+</main>
+
+<section class="persp" aria-label="Karakter seçimi">
+  <div class="lane-title">Karakter seç <span>kaydır →</span></div>
+  <div class="world" id="world">
+      <div class="char char-coffin" data-id="coffin" style="--cx:200;--feet:1068;--h:227;--ar:1.4970;--tz:200">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/coffin_closed.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig fig-closed" src="img/coffin_closed.webp" alt="" width="1000" height="668" decoding="async" draggable="false"><img class="fig fig-open" src="img/coffin_open.webp" alt="" width="1000" height="668" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="coffin" style="clip-path:polygon(0.2% 25.48%,2.25% 37.21%,0.07% 39.76%,2.31% 51.17%,0.95% 59.73%,65.96% 99.49%,88.36% 99.9%,96.26% 77.88%,95.78% 66.16%,99.66% 50.87%,98.91% 43.73%,56.23% 23.96%,55.21% 11.01%,12.59% 0.2%,13.07% 14.07%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char" data-id="orange" style="--cx:172;--feet:1012;--h:520;--ar:0.3509;--tz:40">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/orange.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig" src="img/orange.webp" alt="" width="372" height="1060" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="orange" style="clip-path:polygon(44.67% 0.14%,30.38% 5.72%,37.83% 14.42%,15.9% 18.87%,0.4% 33.14%,7.65% 34.35%,1.41% 54.91%,12.27% 59.15%,11.07% 48.27%,22.54% 35.69%,15.9% 52.79%,27.77% 85.87%,15.29% 95.9%,31.39% 96.47%,48.89% 92.93%,50.3% 57.03%,69.22% 94.7%,96.38% 99.72%,83.3% 59.01%,95.98% 54.56%,91.55% 33.71%,98.99% 32.51%,83.3% 18.3%,61.17% 14.42%,63.18% 3.53%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char" data-id="graypolice" style="--cx:376;--feet:990;--h:500;--ar:0.3642;--tz:0">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/graypolice.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig" src="img/graypolice.webp" alt="" width="386" height="1060" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="graypolice" style="clip-path:polygon(45.36% 0.37%,35.89% 4.7%,35.08% 14.03%,20.16% 17.93%,6.85% 30.42%,10.89% 31.74%,0.2% 51.8%,12.5% 56.28%,11.29% 45.78%,17.34% 40.71%,23.99% 48.64%,15.52% 51.29%,17.14% 59.59%,24.19% 60.18%,24.4% 87.29%,11.69% 94.86%,25.81% 95.74%,41.73% 92.43%,52.42% 55.11%,71.98% 83.03%,73.19% 95.44%,77.62% 99.12%,88.1% 99.78%,94.56% 97.58%,83.06% 54.67%,88.1% 52.17%,88.31% 57.16%,99.6% 52.53%,98.79% 30.42%,85.69% 17.63%,70.16% 14.03%,63.91% 1.98%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char" data-id="suitman" style="--cx:566;--feet:970;--h:486;--ar:0.3245;--tz:-40">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/suitman.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig" src="img/suitman.webp" alt="" width="344" height="1060" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="suitman" style="clip-path:polygon(49.05% 0.08%,34.29% 3.56%,37.86% 12.68%,7.86% 18.48%,0.95% 36.66%,14.52% 41.14%,10.0% 53.44%,15.95% 55.22%,16.9% 86.7%,8.1% 98.76%,23.81% 99.38%,33.1% 95.36%,50.71% 56.38%,67.62% 93.35%,82.86% 98.92%,95.24% 99.77%,99.29% 97.83%,85.24% 86.62%,89.05% 52.05%,84.29% 40.6%,95.48% 36.12%,90.0% 18.25%,61.67% 13.15%,65.48% 2.4%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char char-dog" data-id="dog" style="--cx:960;--feet:1062;--h:232;--ar:0.6319;--tz:120">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref dog-sit" src="img/dog.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="ref dog-sleep" src="img/dog_sleep.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig dog-sit" src="img/dog.webp" alt="" width="455" height="720" decoding="async" draggable="false">
+          <img class="fig dog-sleep" src="img/dog_sleep.webp" alt="" width="560" height="612" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="dog" style="clip-path:polygon(57.4% 0.09%,39.79% 10.37%,27.66% 0.93%,22.04% 1.78%,18.05% 13.08%,19.82% 21.87%,16.27% 26.45%,19.67% 31.4%,13.02% 39.81%,15.83% 44.77%,12.28% 58.88%,16.12% 66.17%,8.14% 76.17%,11.98% 87.57%,0.3% 91.87%,3.7% 94.11%,14.2% 93.55%,13.31% 99.16%,25.3% 98.79%,27.37% 94.02%,51.18% 93.93%,52.37% 98.6%,64.5% 99.63%,66.12% 95.05%,81.07% 95.51%,77.07% 90.28%,79.73% 88.5%,89.2% 92.8%,99.26% 90.0%,94.23% 84.86%,81.51% 82.24%,79.14% 68.32%,71.15% 63.93%,67.01% 39.25%,59.76% 30.84%,62.43% 26.64%,59.02% 21.87%,61.24% 12.9%)" data-poly-sit="polygon(57.4% 0.09%,39.79% 10.37%,27.66% 0.93%,22.04% 1.78%,18.05% 13.08%,19.82% 21.87%,16.27% 26.45%,19.67% 31.4%,13.02% 39.81%,15.83% 44.77%,12.28% 58.88%,16.12% 66.17%,8.14% 76.17%,11.98% 87.57%,0.3% 91.87%,3.7% 94.11%,14.2% 93.55%,13.31% 99.16%,25.3% 98.79%,27.37% 94.02%,51.18% 93.93%,52.37% 98.6%,64.5% 99.63%,66.12% 95.05%,81.07% 95.51%,77.07% 90.28%,79.73% 88.5%,89.2% 92.8%,99.26% 90.0%,94.23% 84.86%,81.51% 82.24%,79.14% 68.32%,71.15% 63.93%,67.01% 39.25%,59.76% 30.84%,62.43% 26.64%,59.02% 21.87%,61.24% 12.9%)" data-poly-sleep="polygon(22.14% 0.00%,18.93% 9.48%,18.93% 14.05%,17.68% 18.14%,17.86% 19.93%,18.75% 20.42%,18.57% 25.65%,17.86% 27.29%,18.57% 28.10%,18.75% 30.56%,17.32% 31.70%,17.32% 32.68%,15.36% 35.13%,15.00% 37.58%,15.71% 40.03%,16.79% 41.01%,16.79% 42.32%,16.07% 42.81%,15.54% 44.61%,16.25% 47.39%,14.11% 49.18%,11.61% 53.92%,12.14% 56.37%,13.75% 57.03%,14.11% 60.95%,13.04% 61.76%,12.32% 68.63%,10.36% 71.41%,10.36% 78.76%,7.86% 83.66%,8.04% 85.78%,5.71% 88.56%,3.39% 89.54%,0.89% 93.14%,0.00% 93.30%,0.00% 96.41%,5.89% 98.37%,15.89% 97.88%,18.21% 96.57%,20.00% 93.79%,22.14% 92.48%,22.68% 90.85%,26.79% 87.91%,29.29% 87.75%,40.00% 88.73%,40.00% 90.03%,37.50% 91.50%,35.54% 95.26%,35.36% 97.22%,37.14% 98.69%,39.11% 99.02%,39.29% 99.84%,51.07% 99.84%,51.07% 99.18%,52.86% 97.88%,53.04% 95.75%,53.75% 94.77%,65.54% 90.36%,67.14% 88.73%,66.96% 85.62%,68.75% 85.62%,70.54% 87.42%,77.14% 87.75%,79.64% 87.42%,81.43% 85.29%,83.75% 85.29%,86.43% 86.27%,95.89% 85.95%,99.82% 84.48%,99.82% 76.80%,99.11% 76.80%,97.68% 75.33%,96.07% 72.39%,94.11% 72.06%,93.75% 71.08%,91.07% 70.42%,90.71% 69.77%,84.11% 69.77%,82.32% 65.52%,81.07% 64.54%,81.07% 63.56%,76.61% 59.97%,76.07% 58.82%,73.57% 57.35%,65.71% 55.07%,62.86% 49.02%,60.18% 47.39%,60.36% 45.92%,59.11% 44.28%,58.93% 41.99%,59.64% 41.83%,60.71% 37.25%,59.11% 33.01%,57.68% 31.37%,57.86% 29.41%,58.93% 27.29%,58.57% 21.73%,59.82% 20.75%,59.82% 10.62%,58.75% 3.76%,57.86% 1.47%,55.71% 0.98%,53.04% 2.45%,46.25% 9.64%,42.68% 11.44%,42.68% 13.89%,38.21% 14.22%,35.36% 13.73%,35.71% 11.44%,32.86% 9.31%,29.29% 4.08%,25.54% 0.65%,25.54% 0.00%)"></button>
+          <span class="tag tag--right" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char" data-id="black" style="--cx:1342;--feet:970;--h:490;--ar:0.4075;--tz:-40">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/black.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig" src="img/black.webp" alt="" width="432" height="1060" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="black" style="clip-path:polygon(67.25% 0.27%,54.15% 1.87%,49.13% 11.39%,18.56% 18.77%,3.93% 31.58%,21.62% 53.2%,7.64% 84.07%,10.04% 92.53%,1.31% 99.47%,31.0% 98.4%,38.43% 87.9%,33.62% 84.34%,44.54% 75.18%,52.18% 59.88%,54.8% 84.34%,47.16% 87.37%,51.97% 98.13%,82.31% 99.73%,73.58% 93.24%,81.44% 83.81%,84.28% 54.09%,99.56% 34.88%,92.36% 22.69%,69.43% 13.26%,75.33% 3.74%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char" data-id="beard" style="--cx:1565;--feet:990;--h:505;--ar:0.3736;--tz:0">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/beard.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig" src="img/beard.webp" alt="" width="396" height="1060" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="beard" style="clip-path:polygon(49.26% 0.07%,37.87% 6.93%,42.1% 14.33%,21.51% 20.23%,1.47% 46.98%,2.57% 55.69%,12.68% 57.06%,12.13% 49.31%,28.12% 39.16%,22.43% 51.58%,32.35% 86.56%,23.16% 92.66%,8.64% 95.95%,48.9% 95.68%,51.84% 59.12%,75.18% 93.07%,71.88% 99.38%,86.21% 99.79%,89.52% 89.99%,78.86% 56.79%,93.57% 52.67%,99.45% 33.81%,86.95% 17.01%,61.21% 12.62%,65.26% 3.64%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="char" data-id="mustache" style="--cx:1776;--feet:1012;--h:520;--ar:0.3642;--tz:40">
+        <div class="sprite">
+          <span class="glow"></span>
+          <span class="shadow"></span>
+          <span class="pad"></span>
+          <img class="ref" src="img/mustache.webp" alt="" aria-hidden="true" decoding="async" draggable="false">
+          <img class="fig" src="img/mustache.webp" alt="" width="386" height="1060" decoding="async" draggable="false">
+          <button class="hit" type="button" data-id="mustache" style="clip-path:polygon(51.81% 0.07%,35.89% 2.93%,39.52% 12.84%,14.11% 19.22%,2.82% 29.13%,5.04% 56.13%,14.31% 57.3%,10.89% 52.6%,16.13% 55.03%,10.08% 47.62%,15.52% 39.25%,15.52% 49.08%,21.37% 49.6%,15.32% 91.64%,6.45% 97.95%,11.69% 99.71%,32.06% 96.33%,50.2% 55.25%,63.91% 95.3%,81.85% 99.12%,94.35% 98.17%,80.44% 84.67%,81.05% 40.57%,89.31% 47.76%,85.89% 57.08%,95.97% 55.03%,99.6% 46.66%,85.08% 21.94%,75.2% 15.7%,59.27% 13.57%,65.32% 3.52%)"></button>
+          <span class="tag tag--top" aria-hidden="true"></span>
+        </div>
+      </div>
+  </div>
+</section>
+
+<dialog id="go" aria-labelledby="go-title">
+  <div class="go-card">
+    <div class="go-who">
+      <span class="go-photo" id="go-photo"><img id="go-img" alt=""></span>
+      <div>
+        <div class="go-name" id="go-name"></div>
+        <div class="go-eyebrow"><svg aria-hidden="true"><use href="#glass"/></svg>dış bağlantı</div>
+      </div>
+    </div>
+    <h2 id="go-title">Bu siteye yönlendiriliyorsunuz</h2>
+    <p class="go-url"><b id="go-host"></b><small id="go-full"></small></p>
+    <p class="go-ask">Onaylıyor musunuz?</p>
+    <div class="go-actions">
+      <button class="btn" id="go-cancel" type="button">Vazgeç</button>
+      <a class="btn primary" id="go-ok" target="_blank" rel="noopener noreferrer" href="#">Onaylıyorum</a>
+    </div>
+  </div>
+</dialog>
+
+<script>
+/* ===================== KARAKTER BAĞLANTILARI =====================
+   Her karakterin adını ve gideceği adresi buradan değiştir.
+   url boş bırakılırsa pencere "bağlantı henüz eklenmedi" der. */
+const CHARACTERS = {
+  coffin:     { name: "Cesare Vitagliano",    url: "https://eightbornv.com/fandom/cesare-vitagliano-9d4521f67a" },
+  orange:     { name: "Marcelo Martinez",     url: "https://eightbornv.com/fandom/marcelo-martinez-e7594325b8" },
+  graypolice: { name: "Lion Williams",        url: "https://eightbornv.com/fandom/lion-williams-636d4caabb" },
+  suitman:    { name: "Kıdemli Yüzbaşı Martinez",   url: "https://eightbornv.com/fandom/kidemli-yuzbasi-martinez-ef7dceaa06" },
+  dog:        { name: "Bob (K9)",             url: "https://eightbornv.com/fandom/bob-5cd9a8ef4a" },
+  black:      { name: "Caleb Grace",          url: "https://eightbornv.com/fandom/caleb-grace-2f68f94afd" },
+  beard:      { name: "Hjalmarr",             url: "https://eightbornv.com/fandom/hjalmarr-231cd2981c" },
+  mustache:   { name: "Wesley Harper",        url: "https://eightbornv.com/fandom/wesley-harper-e244cf63" }
+};
+
+/* ===================== SOSYAL BAĞLANTILAR =====================
+   Kartların gideceği adresler. Boş bırakılan kart tıklanınca bir şey yapmaz. */
+const LINKS = {
+  instagram: "https://instagram.com/iamoznozkn",
+  tiktok:    "https://tiktok.com/@imjanto",
+  kick:      "https://kick.com/jantoo",
+  discord:   "https://discord.gg/basE5hbGf3",
+  jantolab:  "https://jantolab.com/"
+};
+
+/* ===================== YOUTUBE SON VİDEO =====================
+   Kanalın adresi ve son videoyu otomatik getirme ayarları.
+   1) channelUrl  : kanalın adresi (Kanala git butonu buraya gider)
+   2) channelId   : UC ile başlayan kanal kimliği. Yazınca son video otomatik gelir.
+   3) apiKey      : (isteğe bağlı) YouTube Data API v3 anahtarı. Varsa en sağlam yol budur.
+   4) endpoint    : (isteğe bağlı) kendi sunucundaki JSON adresi: { id, title, published }
+   5) manual      : otomatik çalışmazsa elle yazdığın son video (id: videonun v= kısmı)
+   Hiçbiri yazılmazsa kart örnek görünümünde kalır. */
+const YOUTUBE = {
+  channelUrl: "https://www.youtube.com/channel/UCRqJVaQLwcT3irYb-ZzcuSw",
+  channelId:  "UCRqJVaQLwcT3irYb-ZzcuSw",
+  apiKey:     "",
+  endpoint:   "",
+  manual:     { id: "NC2lFWZecD8", title: "Son video" }
+};
+/* ================================================================ */
+
+document.getElementById("yr").textContent = new Date().getFullYear();
+(function () {
+  var world = document.getElementById("world");
+  var floor = document.getElementById("floor");
+  var chars = Array.prototype.slice.call(world.querySelectorAll(".char"));
+  var hits = Array.prototype.slice.call(world.querySelectorAll(".hit"));
+  var lane = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)");
+  var calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var P = 1800;
+
+  /* ---------- sosyal bağlantılar ---------- */
+  function wire(a, url) {
+    if (url) { a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    else { a.addEventListener("click", function (e) { e.preventDefault(); }); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-link]"), function (a) {
+    wire(a, LINKS[a.getAttribute("data-link")]);
+  });
+
+  /* ---------- YouTube son video kartı ---------- */
+  (function () {
+    var card = document.getElementById("yt");
+    var el = {
+      img: document.getElementById("yt-img"), ph: document.getElementById("yt-ph"),
+      title: document.getElementById("yt-title"), when: document.getElementById("yt-when"),
+      isNew: document.getElementById("yt-new"), watch: document.getElementById("yt-watch"),
+      chan: document.getElementById("yt-chan"), thumb: document.getElementById("yt-thumb")
+    };
+    var chanUrl = YOUTUBE.channelUrl || (YOUTUBE.channelId ? "https://www.youtube.com/channel/" + YOUTUBE.channelId : "");
+    var KEY = "janto.yt.v1";
+
+    function setHref(a, url) {
+      if (url) { a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.removeAttribute("aria-disabled"); }
+      else { a.href = "#"; a.removeAttribute("target"); }
+    }
+    setHref(el.chan, chanUrl);
+    [el.chan, el.watch, el.thumb].forEach(function (a) {
+      a.addEventListener("click", function (e) { if (a.getAttribute("href") === "#") e.preventDefault(); });
+    });
+    setHref(el.watch, chanUrl); setHref(el.thumb, chanUrl);
+
+    function ago(iso) {
+      var t = Date.parse(iso); if (!t) return "";
+      var s = Math.round((Date.now() - t) / 1000), rtf;
+      try { rtf = new Intl.RelativeTimeFormat("tr", { numeric: "auto" }); } catch (e) { return ""; }
+      var units = [["year", 31536000], ["month", 2592000], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60]];
+      for (var i = 0; i < units.length; i++) {
+        if (s >= units[i][1]) return rtf.format(-Math.floor(s / units[i][1]), units[i][0]);
+      }
+      return "az önce";
+    }
+
+    function show(v) {
+      var url = "https://www.youtube.com/watch?v=" + encodeURIComponent(v.id);
+      el.title.textContent = v.title || "Yeni video yayında";
+      var when = v.published ? ago(v.published) : "";
+      el.when.textContent = (when ? when + " · " : "") + "youtube.com";
+      var fresh = v.published && (Date.now() - Date.parse(v.published)) < 7 * 86400000;
+      el.isNew.hidden = !fresh;
+      setHref(el.watch, url); setHref(el.thumb, url);
+      el.img.onload = function () { el.img.hidden = false; el.ph.hidden = true; };
+      el.img.onerror = function () { el.img.hidden = true; el.ph.hidden = false; };
+      el.img.src = "https://i.ytimg.com/vi/" + encodeURIComponent(v.id) + "/hqdefault.jpg";
+      card.setAttribute("data-state", "ready");
+    }
+
+    function fail(msg) {
+      if (card.getAttribute("data-state") === "ready") return;
+      el.title.textContent = "Yeni videolar için kanala göz at";
+      el.when.textContent = msg || "son video şu an yüklenemedi";
+      card.setAttribute("data-state", "error");
+    }
+
+    function getJSON(url) {
+      var ctl = window.AbortController ? new AbortController() : null;
+      var timer = ctl ? setTimeout(function () { ctl.abort(); }, 7000) : 0;
+      return fetch(url, ctl ? { signal: ctl.signal } : {}).then(function (r) {
+        clearTimeout(timer);
+        if (!r.ok) throw new Error("http " + r.status);
+        return r.json();
+      });
+    }
+
+    function normalizeVideo(v) {
+      if (!v || !v.id) throw new Error("bad video data");
+      return {
+        id: String(v.id),
+        title: v.title || "Son video",
+        published: v.published || ""
+      };
+    }
+
+    // RSS yedeği: önce YouTube Atom/RSS verisini CORS proxy üzerinden XML olarak oku.
+    // Böylece rss2json servisi sorun yaşarsa bağımsız bir yol denenir.
+    function latestFromRSSProxy() {
+      var c = YOUTUBE;
+      if (!c.channelId) return Promise.reject(new Error("no-channel"));
+      var feedUrl = "https://www.youtube.com/feeds/videos.xml?channel_id=" +
+        encodeURIComponent(c.channelId);
+      var proxyUrl = "https://proxy.cors.dev/" + feedUrl;
+      var ctl = window.AbortController ? new AbortController() : null;
+      var timer = ctl ? setTimeout(function () { ctl.abort(); }, 7000) : 0;
+
+      return fetch(proxyUrl, ctl ? { signal: ctl.signal, credentials: "omit" } : { credentials: "omit" })
+        .then(function (response) {
+          clearTimeout(timer);
+          if (!response.ok) throw new Error("rss-proxy-http-" + response.status);
+          return response.text();
+        })
+        .catch(function (error) {
+          clearTimeout(timer);
+          throw error;
+        })
+        .then(function (xmlText) {
+          var doc = new DOMParser().parseFromString(xmlText, "application/xml");
+          if (doc.getElementsByTagName("parsererror").length) {
+            throw new Error("rss-invalid-xml");
+          }
+          var atomNS = "http://www.w3.org/2005/Atom";
+          var ytNS = "http://www.youtube.com/xml/schemas/2015";
+          var entries = doc.getElementsByTagNameNS(atomNS, "entry");
+          if (!entries.length) entries = doc.getElementsByTagName("entry");
+          if (!entries.length) throw new Error("rss-empty");
+
+          var entry = entries[0];
+          function textOf(namespace, name) {
+            var nodes = entry.getElementsByTagNameNS(namespace, name);
+            if (nodes.length) return (nodes[0].textContent || "").trim();
+            nodes = entry.getElementsByTagName(name);
+            if (nodes.length) return (nodes[0].textContent || "").trim();
+            nodes = entry.getElementsByTagName("yt:" + name);
+            return nodes.length ? (nodes[0].textContent || "").trim() : "";
+          }
+
+          var id = textOf(ytNS, "videoId");
+          if (!id) {
+            var atomId = textOf(atomNS, "id") || textOf("", "id");
+            var match = /yt:video:([\w-]+)/.exec(atomId);
+            if (match) id = match[1];
+          }
+          var title = textOf(atomNS, "title") || textOf("", "title");
+          var published = textOf(atomNS, "published") || textOf("", "published") ||
+            textOf(atomNS, "updated") || textOf("", "updated");
+          if (!id) throw new Error("rss-no-id");
+          return normalizeVideo({ id: id, title: title, published: published });
+        });
+    }
+
+    // Son çare: eski RSS2JSON dönüştürücüsü. Bu servis üçüncü taraftır ve
+    // geçici 403/CAPTCHA veya kota sorunları yaşayabilir.
+    function latestFromRSS2JSON() {
+      var c = YOUTUBE;
+      if (!c.channelId) return Promise.reject(new Error("no-channel"));
+      var feed = encodeURIComponent(
+        "https://www.youtube.com/feeds/videos.xml?channel_id=" + c.channelId
+      );
+      return getJSON("https://api.rss2json.com/v1/api.json?rss_url=" + feed)
+        .then(function (j) {
+          if (j && j.status && j.status !== "ok") throw new Error("rss2json-status");
+          var it = j && j.items && j.items[0];
+          if (!it) throw new Error("rss2json-empty");
+          var m = /[?&]v=([\w-]{6,})/.exec(it.link || "") ||
+                  /yt:video:([\w-]+)/.exec(it.guid || "");
+          if (!m) throw new Error("rss2json-no-id");
+          var published = "";
+          if (it.pubDate) {
+            var rawDate = String(it.pubDate).trim();
+            published = rawDate.indexOf("T") >= 0
+              ? rawDate
+              : rawDate.replace(" ", "T") + "Z";
+          }
+          return normalizeVideo({ id: m[1], title: it.title, published: published });
+        });
+    }
+
+    function latestFromRSS() {
+      // Önce doğrudan XML okuyabilen proxy; o da başarısızsa RSS2JSON.
+      return latestFromRSSProxy().catch(function () {
+        return latestFromRSS2JSON();
+      });
+    }
+
+    // Birincil kaynak: müşterinin sunucu endpoint'i veya YouTube Data API v3.
+    function latestFromPrimary() {
+      var c = YOUTUBE;
+      if (c.endpoint) {
+        return getJSON(c.endpoint).then(function (j) {
+          return normalizeVideo({
+            id: j && j.id,
+            title: j && j.title,
+            published: j && j.published
+          });
+        });
+      }
+      if (c.channelId && c.apiKey) {
+        var pl = "UU" + c.channelId.slice(2);
+        return getJSON("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&playlistId=" +
+          encodeURIComponent(pl) + "&key=" + encodeURIComponent(c.apiKey)).then(function (j) {
+          var s = j.items && j.items[0] && j.items[0].snippet;
+          if (!s || !s.resourceId || !s.resourceId.videoId) {
+            throw new Error("youtube-api-empty");
+          }
+          return normalizeVideo({
+            id: s.resourceId.videoId,
+            title: s.title,
+            published: s.publishedAt
+          });
+        });
+      }
+      // Birincil API ayarlanmamışsa RSS yöntemi ana kaynak olarak kullanılabilir.
+      return latestFromRSS();
+    }
+
+    function latest() {
+      var c = YOUTUBE;
+      if (!c.endpoint && !(c.channelId && c.apiKey)) {
+        return latestFromRSS();
+      }
+      // Önce API/endpoint dene; başarısız olursa RSS'yi yedek olarak dene.
+      return latestFromPrimary().catch(function (primaryError) {
+        if (!c.channelId) throw primaryError;
+        return latestFromRSS();
+      });
+    }
+
+    function readCache() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } }
+    function writeCache(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+
+    var configured = YOUTUBE.endpoint || YOUTUBE.channelId;
+    var manualVideo = YOUTUBE.manual && YOUTUBE.manual.id
+      ? { id: YOUTUBE.manual.id, title: YOUTUBE.manual.title || "Son video", published: "" }
+      : null;
+    if (!configured) {
+      if (manualVideo) show(manualVideo);
+      return;                                      /* otomatik kaynak yoksa manuel video */
+    }
+
+    var cached = readCache();
+    /* Önce doğrudan bir video bağlantısı göster: RSS servisi yavaşlasa veya hata verse
+       bile "Son videoyu izle" butonu kanalın /videos sayfasına değil, videoya gider. */
+    if (manualVideo) show(manualVideo);
+    else if (cached && cached.id) show(cached);
+    else card.setAttribute("data-state", "loading");
+
+    /* Otomatik kaynak başarılı olursa en yeni video manuel/yedek bağlantının yerini alır. */
+    latest().then(function (v) {
+      if (!v || !v.id) throw new Error("bad data");
+      writeCache(v); show(v);
+    }).catch(function () {
+      if (!(cached && cached.id) && manualVideo) show(manualVideo);
+      else fail();
+    });
+  })();
+
+  /* ---------- karakter sahnesi ---------- */
+  chars.forEach(function (c) {
+    var d = CHARACTERS[c.dataset.id] || { name: c.dataset.id, url: "" };
+    c.querySelector(".tag").textContent = d.name;
+    c.querySelector(".hit").setAttribute("aria-label", d.name + " — bağlantıya git");
+  });
+
+  /* sahneyi 1920x1080 tasarım alanından ekrana ölçekle; derinlikteki karakterlerin
+     boyutu ve yeri perspektif yüzünden kaymasın diye geri düzeltilir */
+  function layout() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var s = Math.min(vw / 1920, vh / 1080);
+    world.style.setProperty("--s", s.toFixed(4));
+    fitDog(vw, vh, s);
+    var Ox = vw / 2, Oy = vh * 0.6;
+    chars.forEach(function (c) {
+      var cs = getComputedStyle(c);
+      var tz = parseFloat(cs.getPropertyValue("--tz")) || 0;
+      var cxw = parseFloat(cs.getPropertyValue("--cx")) || 960;
+      var feet = parseFloat(cs.getPropertyValue("--feet")) || 1080;
+      var k = P / (P - tz * s);
+      var Dx = vw / 2 + (cxw - 960) * s, Dy = vh + (feet - 1080) * s;
+      var Bx = Ox + (Dx - Ox) / k, By = Oy + (Dy - Oy) / k;
+      c.style.setProperty("--dx", ((Bx - Dx) / s).toFixed(2));
+      c.style.setProperty("--dy", ((By - Dy) / s).toFixed(2));
+      c.style.setProperty("--zs", (1 / k).toFixed(4));
+    });
+  }
+  /* köpek: sütunun altına sığıyorsa oturuyor, sığmıyorsa uyuyan haline geçip boyu hesapla küçülüyor */
+  var dogEl = world.querySelector(".char-dog");
+  var dogHit = dogEl.querySelector(".hit");
+  var DOG = { h: 232, arSit: 0.6319, arSleep: 0.9150, hMin: 64 };
+  function fitDog(vw, vh, s) {
+    if (lane.matches) {
+      dogEl.classList.remove("asleep");
+      dogEl.style.setProperty("--h", DOG.h); dogEl.style.setProperty("--ar", DOG.arSit);
+      dogHit.style.clipPath = dogHit.dataset.polySit;
+      return;
+    }
+    var feetY = vh + (parseFloat(getComputedStyle(dogEl).getPropertyValue("--feet")) - 1080) * s;
+    var links = document.querySelector(".links").getBoundingClientRect().bottom;
+    var gap = 12;
+    var sitTop = feetY - DOG.h * s;
+    var sleep = sitTop < links + gap;
+    var h = DOG.h;
+    if (sleep) h = Math.max(DOG.hMin, Math.min(DOG.h * 0.92, (feetY - links - gap) / s));
+    dogEl.classList.toggle("asleep", sleep);
+    dogEl.style.setProperty("--h", h.toFixed(1));
+    dogEl.style.setProperty("--ar", (sleep ? DOG.arSleep : DOG.arSit).toFixed(4));
+    dogHit.style.clipPath = sleep ? dogHit.dataset.polySleep : dogHit.dataset.polySit;
+  }
+  layout();
+  window.addEventListener("resize", layout);
+  window.addEventListener("load", layout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+
+  /* seçili karakter */
+  function setActive(c) {
+    world.classList.toggle("has-active", !!c);
+    chars.forEach(function (x) { x.classList.toggle("active", x === c); });
+  }
+
+  /* onay penceresi */
+  var dlg = document.getElementById("go");
+  var okBtn = document.getElementById("go-ok");
+  var lastFocus = null;
+  function openGo(id, from) {
+    var d = CHARACTERS[id] || { name: id, url: "" };
+    var url = (d.url || "").trim(), host = "", full = "";
+    if (url) {
+      try { var u = new URL(url); host = u.hostname.replace(/^www\./, ""); full = u.href; }
+      catch (e) { host = url; full = ""; }
+    }
+    var src = document.querySelector('.char[data-id="' + id + '"] .fig').getAttribute("src");
+    var img = document.getElementById("go-img");
+    img.src = src;
+    document.getElementById("go-photo").classList.toggle("contain", id === "coffin");
+    document.getElementById("go-photo").classList.toggle("dog", id === "dog");
+    document.getElementById("go-name").textContent = d.name;
+    document.getElementById("go-host").textContent = host || "Bağlantı henüz eklenmedi";
+    document.getElementById("go-full").textContent = full;
+    document.getElementById("go-full").hidden = !full;
+    if (url) { okBtn.href = url; okBtn.removeAttribute("aria-disabled"); okBtn.tabIndex = 0; }
+    else { okBtn.removeAttribute("href"); okBtn.setAttribute("aria-disabled", "true"); okBtn.tabIndex = -1; }
+    lastFocus = from || null;
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+  }
+  function closeGo() {
+    if (dlg.close) dlg.close(); else dlg.removeAttribute("open");
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  document.getElementById("go-cancel").addEventListener("click", closeGo);
+  okBtn.addEventListener("click", function () { setTimeout(closeGo, 0); });
+  dlg.addEventListener("click", function (e) { if (e.target === dlg) closeGo(); });
+
+  hits.forEach(function (h) {
+    var c = h.closest(".char");
+    h.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") setActive(c); });
+    h.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse" && document.activeElement !== h) setActive(null); });
+    h.addEventListener("focus", function () { if (h.matches(":focus-visible")) setActive(c); });
+    h.addEventListener("blur", function () { setActive(null); });
+    h.addEventListener("click", function () { openGo(h.dataset.id, h); });
+    h.addEventListener("keydown", function (e) {
+      var i = hits.indexOf(h), n = null;
+      if (e.key === "ArrowRight") n = hits[Math.min(i + 1, hits.length - 1)];
+      if (e.key === "ArrowLeft") n = hits[Math.max(i - 1, 0)];
+      if (n) { e.preventDefault(); n.focus(); if (lane.matches) n.closest(".char").scrollIntoView({ block: "nearest", inline: "center" }); }
+    });
+  });
+
+  /* fare ile hafif derinlik (2.5D) */
+  var tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+  function apply() {
+    world.style.setProperty("--ry", (cx * 2.6).toFixed(3) + "deg");
+    world.style.setProperty("--rx", (-cy * 1.1).toFixed(3) + "deg");
+    floor.style.setProperty("--fx", (-cx * 14).toFixed(2));
+    floor.style.setProperty("--fy", (-cy * 8).toFixed(2));
+  }
+  function tick() {
+    cx += (tx - cx) * 0.08; cy += (ty - cy) * 0.08; apply();
+    raf = (Math.abs(tx - cx) > 0.002 || Math.abs(ty - cy) > 0.002) ? requestAnimationFrame(tick) : 0;
+  }
+  window.addEventListener("pointermove", function (e) {
+    if (e.pointerType !== "mouse" || lane.matches || calm.matches) return;
+    tx = (e.clientX / window.innerWidth - 0.5) * 2;
+    ty = (e.clientY / window.innerHeight - 0.5) * 2;
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+  document.documentElement.addEventListener("pointerleave", function () {
+    tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(tick);
+  });
+})();
+</script>
+
+</body></html>
