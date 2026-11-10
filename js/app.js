@@ -293,6 +293,7 @@ document.getElementById("yr").textContent = new Date().getFullYear();
 
 /* Gösterilmeyen ama gerekebilecek görselleri sayfa yüklendikten sonra boşta iken ısıt. */
 window.addEventListener("load", function () {
-  var warm = function () { ["img/dog_sleep.webp", "img/coffin_open.webp"].forEach(function (u) { new Image().src = u; }); };
+  var narrow = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)").matches;
+  var warm = function () { (narrow ? [] : ["img/dog_sleep.webp", "img/coffin_open.webp"]).forEach(function (u) { new Image().src = u; }); };
   if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 4000 }); else setTimeout(warm, 1500);
 });
