@@ -1,0 +1,36 @@
+name: Son videoyu güncelle
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # her 3 saatte bir
+  workflow_dispatch:          # Actions sekmesinden elle çalıştırmak için
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-video
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: YouTube RSS'ten son videoyu oku
+        env:
+          CHANNEL_ID: UCRqJVaQLwcT3irYb-ZzcuSw
+        run: node scripts/update-video.mjs
+      - name: Değişiklik varsa kaydet
+        run: |
+          if [ -n "$(git status --porcelain data/videos.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/videos.json
+            git commit -m "Son video güncellendi"
+            git push
+          fi
