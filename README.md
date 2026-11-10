@@ -10,7 +10,7 @@ Karakter seçim ekranı temalı, tek sayfalık bağlantı sitesi. Saf HTML, CSS 
 | `css/style.css` | Tüm stiller ve yazı tipi tanımları |
 | `js/app.js` | Bağlantılar, karakter sahnesi, son video kartı. Üstteki `CHARACTERS`, `LINKS`, `YOUTUBE` bölümlerini düzenle |
 | `data/videos.json` | Son video. Elle değiştirme, otomatik güncellenir |
-| `.github/workflows/update-video.yml` | Her 3 saatte YouTube RSS'ini okuyup `videos.json` dosyasını günceller |
+| `.github/workflows/update-video.yml` | Her 15 dakikada YouTube RSS'ini okuyup `videos.json` dosyasını günceller |
 | `_headers` | Netlify güvenlik başlıkları (CSP, X-Frame-Options vb.) ve önbellek süreleri |
 | `fonts/` | Kendi sunucumuzdan sunulan Manrope ve Playfair Display |
 | `img/` | Görseller. `og.jpg` paylaşım önizlemesi, `icon-*.png` ve `favicon-64.png` simgeler |
