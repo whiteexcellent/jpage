@@ -30,3 +30,22 @@ Karakter seçim ekranı temalı, tek sayfalık bağlantı sitesi. Saf HTML, CSS 
 ## Lisans ve içerik hakları
 
 Kaynak kod MIT lisanslıdır (`LICENSE`). Karakter görselleri, Janto logosu ve oyun sunucusuna ait içerikler bu lisansın dışındadır; hakları ilgili sahiplerine aittir ve izinsiz kullanılamaz.
+
+## Kendi sunucunda yayınlama (Caddy)
+
+Site saf statik dosyalardır, derleme ya da veritabanı gerekmez. Netlify'a özel iki şey vardır: `_headers` dosyası ve GitHub Actions ile video güncelleme. Sunucuda ikisi de elle kurulur.
+
+1. **Dosyaları al:** sunucuda `git clone https://github.com/whiteexcellent/jpage /var/www/jpage`
+2. **Caddy'yi kur ve ayarla:** `deploy/Caddyfile` dosyasındaki alan adını kendi alan adınla değiştir, Caddy ayar dosyasına ekle, `sudo systemctl reload caddy` çalıştır. Başlıklar, önbellek ve 404 sayfası bu dosyada hazırdır, HTTPS sertifikasını Caddy kendisi alır.
+3. **Alan adının DNS kaydı** sunucunun IP adresini göstermeli (A kaydı).
+4. **Adresleri güncelle:** `index.html` içindeki `canonical` ve `og:url` / `og:image` adreslerini yeni alan adıyla değiştir.
+5. **Son videonun otomatik güncellenmesi** (ikisinden biri):
+   - Sunucu kendisi yapsın (Node 18+ kurulu olmalı). `crontab -e` ile şunu ekle:
+     ```
+     */15 * * * * cd /var/www/jpage && CHANNEL_ID=UCRqJVaQLwcT3irYb-ZzcuSw node scripts/update-video.mjs
+     ```
+   - GitHub Actions yapmaya devam etsin, sunucu sadece çeksin:
+     ```
+     */15 * * * * cd /var/www/jpage && git pull -q --ff-only
+     ```
+6. **Güncelleme:** kodu değiştirince sunucuda `git pull` yeter. CSS ya da JS değiştirdiysen `index.html` içindeki `?v=` sürüm numarasını artır.
