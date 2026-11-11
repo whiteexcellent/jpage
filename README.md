@@ -31,12 +31,14 @@ Karakter seçim ekranı temalı, tek sayfalık bağlantı sitesi. Saf HTML, CSS 
 
 Kaynak kod MIT lisanslıdır (`LICENSE`). Karakter görselleri, Janto logosu ve oyun sunucusuna ait içerikler bu lisansın dışındadır; hakları ilgili sahiplerine aittir ve izinsiz kullanılamaz.
 
-## Kendi sunucunda yayınlama (Caddy)
+## Kendi sunucunda yayınlama (Caddy veya nginx)
 
 Site saf statik dosyalardır, derleme ya da veritabanı gerekmez. Netlify'a özel iki şey vardır: `_headers` dosyası ve GitHub Actions ile video güncelleme. Sunucuda ikisi de elle kurulur.
 
 1. **Dosyaları al:** sunucuda `git clone https://github.com/whiteexcellent/jpage /var/www/jpage`
-2. **Caddy'yi kur ve ayarla:** `deploy/Caddyfile` dosyasındaki alan adını kendi alan adınla değiştir, Caddy ayar dosyasına ekle, `sudo systemctl reload caddy` çalıştır. Başlıklar, önbellek ve 404 sayfası bu dosyada hazırdır, HTTPS sertifikasını Caddy kendisi alır.
+2. **Web sunucusunu ayarla** (birini seç):
+   - **Caddy (önerilen, en kolay):** `deploy/Caddyfile` dosyasındaki alan adını kendi alan adınla değiştir, Caddy ayarına ekle, `sudo systemctl reload caddy` çalıştır. Başlıklar, önbellek ve 404 sayfası hazırdır, HTTPS sertifikasını Caddy kendisi alır.
+   - **nginx:** `deploy/nginx.conf` dosyasını `/etc/nginx/conf.d/jpage.conf` olarak kaydet, alan adını değiştir, `sudo nginx -t && sudo systemctl reload nginx` çalıştır. HTTPS için `sudo certbot --nginx -d alanadin.com`.
 3. **Alan adının DNS kaydı** sunucunun IP adresini göstermeli (A kaydı).
 4. **Adresleri güncelle:** `index.html` içindeki `canonical` ve `og:url` / `og:image` adreslerini yeni alan adıyla değiştir.
 5. **Son videonun otomatik güncellenmesi** (ikisinden biri):
