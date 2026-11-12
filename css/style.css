@@ -626,7 +626,7 @@ h1 {
 .copy:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .links > li { animation: none; } }
 .wordmark .logo { margin-right: -.12em; }
-.contact { flex-wrap: wrap; text-align: center; } .contact span { text-align: center; }
+
 
 /* ===== Sade yönlendirme penceresi ===== */
 dialog#go {
@@ -657,3 +657,23 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
   .go-card { padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
 }
 @keyframes sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ===== İletişim kartı ===== */
+.contact { display: flex; flex-direction: column; align-items: center; gap: .55em; margin: .9em 0 0; padding: 0; background: none; border: 0; font-size: .85em; text-align: center; }
+.contact-h { display: block; font: 700 .78em var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.contact-row { display: flex; align-items: center; gap: .5em; padding: .3em .3em .3em 1em; border: 1px solid var(--line); border-radius: 99px; background: rgba(16, 14, 11, .6); }
+.contact-mail { text-decoration: none !important; display: inline-flex; align-items: center; gap: .55em; font-weight: 700; color: var(--accent-hi); text-decoration: none; padding: .35em 0; }
+.contact-mail svg { width: 1.15em; height: 1.15em; color: var(--accent); }
+.contact-mail:hover { color: #fff3c6; }
+.contact-mail:focus-visible, .copy:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; border-radius: 99px; }
+.copy { position: relative; margin: 0; padding: 0; width: 2.3em; height: 2.3em; display: grid; place-items: center; border-radius: 50%; color: var(--card-sub); background: rgba(255, 255, 255, .06); border: 1px solid var(--line); cursor: pointer; transition: background .15s, color .15s, border-color .15s, transform .1s; }
+.copy svg { grid-area: 1/1; width: 1.1em; height: 1.1em; transition: opacity .15s, transform .2s; }
+.copy .i-ok { opacity: 0; transform: scale(.6); }
+.copy:hover { color: var(--accent-hi); border-color: var(--line-hi); background: rgba(230, 195, 106, .1); }
+.copy:active { transform: scale(.92); }
+.copy.done { color: var(--accent-fg); background: var(--accent); border-color: transparent; }
+.copy.done .i-copy { opacity: 0; transform: scale(.6); } .copy.done .i-ok { opacity: 1; transform: none; }
+.contact-note { min-height: 1.2em; margin-top: -.25em; font: 600 .78em var(--font-body); color: var(--accent-hi); }
+.contact-note:empty { visibility: hidden; }
+@media (pointer: coarse) { .copy { width: 44px; height: 44px; } .contact-row { padding-left: 1.1em; } }
+.contact a.contact-mail { text-decoration: none; } .copy.done { color: #1a1408; }

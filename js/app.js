@@ -44,14 +44,15 @@ document.getElementById("yr").textContent = new Date().getFullYear();
   if (!a) return;
   var addr = ["jantokick", "gmail.com"].join("@");
   a.href = "mailto:" + addr;
-  a.textContent = addr;
-  var cp = document.getElementById("copy");
+  document.getElementById("mail-t").textContent = addr;
+  var cp = document.getElementById("copy"), note = document.getElementById("copy-note"), t;
   if (cp && navigator.clipboard && navigator.clipboard.writeText) {
     cp.hidden = false;
     cp.addEventListener("click", function () {
       navigator.clipboard.writeText(addr).then(function () {
-        cp.textContent = "Kopyalandı"; cp.classList.add("done");
-        setTimeout(function () { cp.textContent = "Kopyala"; cp.classList.remove("done"); }, 1800);
+        cp.classList.add("done"); note.textContent = "Kopyalandı";
+        clearTimeout(t);
+        t = setTimeout(function () { cp.classList.remove("done"); note.textContent = ""; }, 1800);
       }).catch(function () {});
     });
   }
