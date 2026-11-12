@@ -45,6 +45,16 @@ document.getElementById("yr").textContent = new Date().getFullYear();
   var addr = ["jantokick", "gmail.com"].join("@");
   a.href = "mailto:" + addr;
   a.textContent = addr;
+  var cp = document.getElementById("copy");
+  if (cp && navigator.clipboard && navigator.clipboard.writeText) {
+    cp.hidden = false;
+    cp.addEventListener("click", function () {
+      navigator.clipboard.writeText(addr).then(function () {
+        cp.textContent = "Kopyalandı"; cp.classList.add("done");
+        setTimeout(function () { cp.textContent = "Kopyala"; cp.classList.remove("done"); }, 1800);
+      }).catch(function () {});
+    });
+  }
 })();
 (function () {
   var world = document.getElementById("world");

@@ -25,8 +25,8 @@
 <link rel="preload" href="fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/manrope-latin-ext-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/playfair-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=20261112c">
-<script src="js/app.js?v=20261112c" defer></script>
+<link rel="stylesheet" href="css/style.css?v=20261112d">
+<script src="js/app.js?v=20261112d" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -55,15 +55,15 @@
 
 <main>
   <header class="hero">
-    <div class="logo-wrap">
-      <img class="logo" src="img/logo-240.webp" alt="Janto logosu: taçlı J harfi" width="240" height="279" fetchpriority="high" decoding="async">
-    </div>
-    <h1>JANTO</h1>
+    <h1 class="wordmark" aria-label="JANTO">
+      <img class="logo" src="img/logo-240.webp" alt="" width="240" height="279" fetchpriority="high" decoding="async">
+      <span aria-hidden="true">ANTO</span>
+    </h1>
     <p class="tagline">&gt; demli fikirler, taze yapımlar</p>
     <!-- Sponsorluk satırı: adres js/app.js içinde parçalı birleştirilir -->
     <p class="contact">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.6"/><path d="M3.8 7.2L12 13.2l8.2-6"/></svg>
-      <span><b class="contact-h">Sponsorluk / İşbirliği</b><br>Sponsorluk ve işbirliği için: <a id="mail" href="#">e-posta adresini göster</a><noscript> jantokick [at] gmail [dot] com</noscript></span>
+      <span><b class="contact-h">Sponsorluk / İşbirliği</b><br>Sponsorluk ve işbirliği için: <a id="mail" href="#">e-posta adresini göster</a><noscript> jantokick [at] gmail [dot] com</noscript> <button class="copy" id="copy" type="button" hidden>Kopyala</button></span>
     </p>
   </header>
 
@@ -93,7 +93,7 @@
         <span class="tile">
           <img src="img/ic_instagram.webp?v=2" alt="" width="192" height="192" decoding="async">
         </span>
-        <span class="txt"><b>Instagram</b><small>İnstagram hesabını takip et</small></span>
+        <span class="txt"><b>Instagram</b><small>@iamoznozkn</small></span>
         <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
       </a>
     </li>
@@ -102,7 +102,7 @@
         <span class="tile">
           <img src="img/ic_tiktok.webp?v=2" alt="" width="192" height="192" decoding="async">
         </span>
-        <span class="txt"><b>TikTok</b><small>Tiktok hesabını takip et</small></span>
+        <span class="txt"><b>TikTok</b><small>@imjanto</small></span>
         <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
       </a>
     </li>
@@ -111,7 +111,7 @@
         <span class="tile">
           <img src="img/ic_kick.webp?v=2" alt="" width="192" height="192" decoding="async">
         </span>
-        <span class="txt"><b>Kick</b><small>Kick kanalımı takip et</small></span>
+        <span class="txt"><b>Kick</b><small>kick.com/jantoo</small></span>
         <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
       </a>
     </li>
@@ -120,7 +120,7 @@
         <span class="tile">
           <img src="img/ic_discord.webp?v=2" alt="" width="192" height="192" decoding="async">
         </span>
-        <span class="txt"><b>Discord</b><small>Topluluğumuza katıl ve eğlenceye devam et</small></span>
+        <span class="txt"><b>Discord</b><small>Topluluğa katıl</small></span>
         <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
       </a>
     </li>
@@ -129,7 +129,7 @@
         <span class="tile">
           <img src="img/ic_jantolab.webp?v=2" alt="" width="192" height="192" decoding="async">
         </span>
-        <span class="txt"><b>JantoLab</b><small>Fivem premium scriptlerin tek adresi</small></span>
+        <span class="txt"><b>JantoLab</b><small>FiveM premium scriptler</small></span>
         <span class="go"><svg aria-hidden="true"><use href="#arrow-out"/></svg></span>
       </a>
     </li>
