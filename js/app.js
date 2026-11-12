@@ -340,14 +340,27 @@ window.addEventListener("load", function () {
     } catch (e) { ctx = null; loaded(); }
   } else { loaded(); }
   /* tarayıcı ilk kullanıcı dokunuşuna kadar sesi askıda tutabilir; ilk dokunuşta aç */
-  function unlock() { if (ctx && ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} } }
-  ["pointerdown", "touchstart", "keydown"].forEach(function (ev) { window.addEventListener(ev, unlock, { passive: true }); });
+  function unlock() { if (ctx && ctx.state === "suspended") { try { ctx.resume().then(hideHint); } catch (e) {} } }
+  ["pointerdown", "touchstart", "mousedown", "click", "keydown"].forEach(function (ev) { window.addEventListener(ev, unlock, { passive: true }); });
+  var hintT = 0;
+  function hint() {
+    var h = document.getElementById("snd-hint");
+    if (!h) { h = document.createElement("div"); h.id = "snd-hint"; h.className = "snd-hint"; h.setAttribute("role", "status"); h.textContent = "Ses için sayfaya bir kez dokun"; document.body.appendChild(h); }
+    h.classList.add("on"); snd.classList.add("attn");
+    clearTimeout(hintT); hintT = setTimeout(function () { h.classList.remove("on"); snd.classList.remove("attn"); }, 4200);
+  }
+  function hideHint() { var h = document.getElementById("snd-hint"); if (h) h.classList.remove("on"); snd.classList.remove("attn"); }
+  /* tarayıcı, kullanıcı sayfaya hiç tıklamadan/dokunmadan sesi engeller; o durumda sessiz kalıp nedenini söyleriz */
   function playBark() {
     if (!soundOn || !ctx || !buf) return;
-    try {
-      if (ctx.state === "suspended") ctx.resume();
-      var s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start(0);
-    } catch (e) {}
+    var go = function () {
+      try { var s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start(0); } catch (e) {}
+    };
+    if (ctx.state === "running") { go(); return; }
+    var p; try { p = ctx.resume(); } catch (e) { hint(); return; }
+    var done = false;
+    var t = setTimeout(function () { if (!done) { done = true; hint(); } }, 120);
+    if (p && p.then) p.then(function () { if (!done) { done = true; clearTimeout(t); if (ctx.state === "running") go(); else hint(); } }, function () { if (!done) { done = true; clearTimeout(t); hint(); } });
   }
   function warm() {
     if (warmed) return; warmed = true;
