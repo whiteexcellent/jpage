@@ -327,16 +327,19 @@ window.addEventListener("load", function () {
   /* --- Bob (K9): okşayınca havlar --- */
   var dog = world.querySelector(".char-dog"), hit = dog && dog.querySelector(".hit"), sprite = dog && dog.querySelector(".sprite");
   if (!hit) return;
-  var warmed = false, busy = false, last = 0, ready = false, ctx = null, buf = null, waiters = [];
+  var warmed = false, busy = false, last = 0, ready = false, ctx = null, bufs = {}, waiters = [];
   /* ses (19 KB) sayfa açılır açılmaz indirilip çözülür; ilk havlamada anında çalsın */
   var AC = window.AudioContext || window.webkitAudioContext;
   function loaded() { ready = true; var w = waiters; waiters = []; w.forEach(function (f) { f(); }); }
   if (AC) {
     try {
       ctx = new AC();
-      fetch("sound/bark.mp3").then(function (r) { return r.arrayBuffer(); })
-        .then(function (ab) { return new Promise(function (ok, no) { ctx.decodeAudioData(ab, ok, no); }); })
-        .then(function (b) { buf = b; loaded(); }).catch(function () { ctx = null; loaded(); });
+      var left = 2, one = function () { if (--left === 0) loaded(); };
+      ["bark", "caleb"].forEach(function (n) {
+        fetch("sound/" + n + ".mp3").then(function (r) { return r.arrayBuffer(); })
+          .then(function (ab) { return new Promise(function (ok, no) { ctx.decodeAudioData(ab, ok, no); }); })
+          .then(function (b) { bufs[n] = b; one(); }).catch(one);
+      });
     } catch (e) { ctx = null; loaded(); }
   } else { loaded(); }
   /* tarayıcı ilk kullanıcı dokunuşuna kadar sesi askıda tutabilir; ilk dokunuşta aç */
@@ -351,10 +354,11 @@ window.addEventListener("load", function () {
   }
   function hideHint() { var h = document.getElementById("snd-hint"); if (h) h.classList.remove("on"); snd.classList.remove("attn"); }
   /* tarayıcı, kullanıcı sayfaya hiç tıklamadan/dokunmadan sesi engeller; o durumda sessiz kalıp nedenini söyleriz */
-  function playBark() {
-    if (!soundOn || !ctx || !buf) return;
+  function playBark() { playSfx("bark"); }
+  function playSfx(name) {
+    if (!soundOn || !ctx || !bufs[name]) return;
     var go = function () {
-      try { var s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start(0); } catch (e) {}
+      try { var s = ctx.createBufferSource(); s.buffer = bufs[name]; s.connect(ctx.destination); s.start(0); } catch (e) {}
     };
     if (ctx.state === "running") { go(); return; }
     var p; try { p = ctx.resume(); } catch (e) { hint(); return; }
@@ -484,7 +488,17 @@ window.addEventListener("load", function () {
       if (Date.now() - cLast < 8000) return;
       cLast = Date.now();
       var r = cal.sprite.getBoundingClientRect(), W = window.innerWidth;
-      var b = pop("Hey homie, watch out!", "bubble", Math.min(Math.max(r.left + r.width / 2, 110), W - 110), r.top - 8, 2800);
+      var el = document.createElement("div");
+      el.className = "bubble";
+      el.innerHTML = '<span class="b-name"></span><span class="b-txt"></span><i class="eq" aria-hidden="true"><b></b><b></b><b></b><b></b></i>';
+      el.querySelector(".b-name").textContent = "Caleb Grace";
+      el.querySelector(".b-txt").textContent = "Hey homie, watch out!";
+      el.style.left = Math.min(Math.max(r.left + r.width / 2, 165), W - 165) + "px";
+      el.style.top = (r.top - 6) + "px";
+      /* kuyruk karakterin tam üstünü göstersin */
+      el.style.setProperty("--tail", (r.left + r.width / 2 - parseFloat(el.style.left)) + "px");
+      fx.appendChild(el); playSfx("caleb");
+      setTimeout(function () { el.remove(); }, 3000);
     }
     cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 800); } });
     cal.hit.addEventListener("pointerleave", function () { clearTimeout(cTimer); });
