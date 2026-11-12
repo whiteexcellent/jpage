@@ -679,3 +679,10 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 .snd.attn { color: var(--accent-fg); background: var(--accent); border-color: transparent; animation: pulse 1s ease-in-out 3; }
 @keyframes pulse { 50% { transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .snd.attn { animation: none; } }
+
+.hav.warn { white-space: nowrap; }
+.bubble { position: fixed; transform: translate(-50%, -100%); max-width: min(360px, 80vw); padding: 10px 16px; border-radius: 18px; background: #fff; color: #111; border: 3px solid #111; font: 800 clamp(15px, 1.4vw, 22px)/1.15 var(--font-body); text-align: center; box-shadow: 0 6px 18px rgba(0, 0, 0, .45); animation: bub .35s cubic-bezier(.2, 1.5, .4, 1) backwards, bubout .3s ease 2.5s forwards; }
+.bubble::after { content: ""; position: absolute; left: 50%; bottom: -13px; width: 18px; height: 18px; background: #fff; border-right: 3px solid #111; border-bottom: 3px solid #111; transform: translateX(-50%) rotate(45deg); }
+@keyframes bub { from { transform: translate(-50%, -80%) scale(.4); opacity: 0; } }
+@keyframes bubout { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bubble { animation: bubout .3s ease 2.5s forwards; } }

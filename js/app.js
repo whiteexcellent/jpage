@@ -373,10 +373,10 @@ window.addEventListener("load", function () {
     var W = window.innerWidth, H = window.innerHeight, r = sprite.getBoundingClientRect();
     if (laneMq.matches) {
       /* telefon: köpeğin hemen yanında, ekran dışına taşmadan */
-      var cl = function (x) { return Math.min(Math.max(x, 36), W - 36); };
+      var cl = function (x) { return Math.min(Math.max(x, 58), W - 58); };
       return [
-        [cl(r.left + r.width * .02), r.top + r.height * .30, -12], [cl(r.right - r.width * .02), r.top + r.height * .22, 11],
-        [cl(r.left + r.width * .5), r.top - r.height * .02, -4], [cl(r.left + r.width * .05), r.top + r.height * .12, 9]
+        [cl(r.left - r.width * .35), r.top + r.height * .42, -12], [cl(r.right + r.width * .35), r.top + r.height * .30, 11],
+        [cl(r.left + r.width * .5), r.top - r.height * .16, -4], [cl(r.left - r.width * .45), r.top + r.height * .08, 9]
       ];
     }
     /* PC: orta sütuna ve köpeğe asla binmez, yazılar iki yan boşluğa dağılır */
@@ -447,4 +447,54 @@ window.addEventListener("load", function () {
     if (useX) dx = d; else dy = d;
     if (rev >= 5) { reset(); bark(); }
   });
+
+  /* --- ortak yardımcılar --- */
+  function pop(txt, cls, x, y, ms, k) {
+    var s = document.createElement("span");
+    s.className = cls; s.textContent = txt; s.style.left = x + "px"; s.style.top = y + "px";
+    if (k) s.style.setProperty("--k", k);
+    fx.appendChild(s); setTimeout(function () { s.remove(); }, ms);
+    return s;
+  }
+  function charHit(id) { var h = world.querySelector('.hit[data-id="' + id + '"]'); return h ? { hit: h, sprite: h.closest(".char").querySelector(".sprite") } : null; }
+
+  /* --- Marcelo Martinez: ikinci dokunuşta uyarı çıkar --- */
+  var mar = charHit("orange");
+  if (mar) {
+    var mTaps = 0, mLast = 0;
+    mar.hit.addEventListener("click", function (e) {
+      var now = Date.now();
+      if (now - mLast > 20000) mTaps = 0;
+      mLast = now; mTaps++;
+      if (mTaps === 2) {
+        e.stopImmediatePropagation(); e.preventDefault();
+        var lane2 = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)").matches;
+        var wb = world.getBoundingClientRect();
+        pop("DON'T TOUCH AGAIN!", "hav warn", window.innerWidth / 2, lane2 ? Math.max(wb.top + 50, 60) : window.innerHeight * .34, 1500, lane2 ? .8 : .62);
+        shake(); setTimeout(shake, 300); mTaps = 0;
+      }
+    }, true);
+  }
+
+  /* --- Caleb Grace: üstünde bekleyince / basılı tutunca uyarır --- */
+  var cal = charHit("black");
+  if (cal) {
+    var cTimer = 0, cLast = 0, cSwallow = false, cx0 = 0, cy0 = 0;
+    function say2() {
+      if (Date.now() - cLast < 8000) return;
+      cLast = Date.now();
+      var r = cal.sprite.getBoundingClientRect(), W = window.innerWidth;
+      var b = pop("Hey homie, watch out!", "bubble", Math.min(Math.max(r.left + r.width / 2, 110), W - 110), r.top - 8, 2800);
+    }
+    cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 800); } });
+    cal.hit.addEventListener("pointerleave", function () { clearTimeout(cTimer); });
+    cal.hit.addEventListener("pointerdown", function (e) {
+      if (e.pointerType === "mouse") return;
+      cx0 = e.clientX; cy0 = e.clientY; cSwallow = false; clearTimeout(cTimer);
+      cTimer = setTimeout(function () { if (Date.now() - cLast >= 8000) { cSwallow = true; } say2(); }, 550);
+    });
+    cal.hit.addEventListener("pointermove", function (e) { if (e.pointerType !== "mouse" && (Math.abs(e.clientX - cx0) > 12 || Math.abs(e.clientY - cy0) > 12)) clearTimeout(cTimer); });
+    ["pointerup", "pointercancel"].forEach(function (ev) { cal.hit.addEventListener(ev, function () { clearTimeout(cTimer); }); });
+    cal.hit.addEventListener("click", function (e) { if (cSwallow) { cSwallow = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  }
 })();
