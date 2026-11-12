@@ -334,25 +334,26 @@ window.addEventListener("load", function () {
     audio = new Audio("sound/bark.mp3"); audio.preload = "auto";
   }
   /* HAV! yazıları ekrana dağılır; köpeğin üstüne binmez */
-  var SLOTS = [[16, 20, -12], [82, 16, 10], [50, 9, -5], [12, 46, -8], [88, 44, 12], [20, 70, 9], [80, 68, -10], [50, 32, 6]];
+  var SLOTS = [[12, 18, -12], [88, 16, 10], [8, 40, -8], [92, 42, 12], [14, 64, 9], [87, 66, -10], [24, 32, 6], [76, 30, -6], [20, 84, -9], [80, 84, 8]];
   var laneMq = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)");
   function pick(n) {
+    var W = window.innerWidth, H = window.innerHeight, r = sprite.getBoundingClientRect();
     if (laneMq.matches) {
-      /* telefon: yazılar karakter kutusunun üst şeridinde kalır, karakterlerin ve kartların üstüne taşmaz */
-      var b = world.getBoundingClientRect(), L = Math.max(b.left, 0), R = Math.min(b.right, window.innerWidth);
-      var span = (R - L) - 80, res = [], order = [0, 2, 1, 3].slice(0, n);
-      order.forEach(function (k, i) {
-        var x = L + 40 + span * (k + .5) / 4 + (Math.random() - .5) * span * .08;
-        res.push([x, Math.max(b.top + 24 + (i % 2) * 22, 34), [-10, 9, -6, 11][i]]);
-      });
-      return res;
+      /* telefon: köpeğin hemen yanında, ekran dışına taşmadan */
+      var cl = function (x) { return Math.min(Math.max(x, 36), W - 36); };
+      return [
+        [cl(r.left + r.width * .02), r.top + r.height * .30, -12], [cl(r.right - r.width * .02), r.top + r.height * .22, 11],
+        [cl(r.left + r.width * .5), r.top - r.height * .02, -4], [cl(r.left + r.width * .05), r.top + r.height * .12, 9]
+      ];
     }
-    var r = sprite.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight, out = [];
+    /* PC: orta sütuna ve köpeğe asla binmez, yazılar iki yan boşluğa dağılır */
+    var m = document.querySelector("main").getBoundingClientRect(), out = [], pad = Math.max(W * .09, 110);
     var pool = SLOTS.slice().sort(function () { return Math.random() - .5; });
     pool.forEach(function (s) {
       if (out.length >= n) return;
-      var x = W * s[0] / 100 + (Math.random() - .5) * W * .05, y = H * s[1] / 100 + (Math.random() - .5) * H * .05;
-      if (x > r.left - 90 && x < r.right + 90 && y > r.top - 60 && y < r.bottom + 30) return;
+      var x = W * s[0] / 100 + (Math.random() - .5) * W * .04, y = H * s[1] / 100 + (Math.random() - .5) * H * .05;
+      if (x > m.left - pad && x < m.right + pad) return;
+      if (x > r.left - pad && x < r.right + pad && y > r.top - 80) return;
       out.push([x, y, s[2]]);
     });
     return out;
@@ -362,7 +363,7 @@ window.addEventListener("load", function () {
       var s = document.createElement("span");
       s.className = "hav"; s.textContent = txt;
       s.style.left = slot[0] + "px"; s.style.top = slot[1] + "px"; s.style.setProperty("--rot", slot[2] + "deg");
-      s.style.fontSize = (Math.random() < .35 ? "1.35em" : "1em");
+      s.style.setProperty("--k", Math.random() < .35 ? "1.3" : "1");
       fx.appendChild(s);
       setTimeout(function () { s.remove(); }, 1100);
     }, at);

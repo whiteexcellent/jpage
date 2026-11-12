@@ -665,7 +665,7 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 .snd svg { grid-area: 1/1; width: 20px; height: 20px; }
 .snd .i-off, .snd.off .i-on { display: none; } .snd.off .i-off { display: block; }
 .fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
-.hav { position: fixed; font: 900 clamp(30px, 5vw, 64px)/1 var(--font-body); letter-spacing: .02em; color: #ff2a2a; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; text-shadow: 0 3px 0 #7a0b0b, 0 6px 14px rgba(0, 0, 0, .5); transform: translate(-50%, -50%) rotate(-12deg) scale(0); animation: hav 1s cubic-bezier(.2, 1.4, .4, 1) forwards; white-space: nowrap; }
+.hav { position: fixed; font: 900 1em/1 var(--font-body); font-size: calc(clamp(30px, 5.6vw, 112px) * var(--k, 1)); letter-spacing: .02em; color: #ff2a2a; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; text-shadow: 0 3px 0 #7a0b0b, 0 6px 14px rgba(0, 0, 0, .5); transform: translate(-50%, -50%) rotate(-12deg) scale(0); animation: hav 1s cubic-bezier(.2, 1.4, .4, 1) forwards; white-space: nowrap; }
 @keyframes hav { 0% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(0); opacity: 1; } 18% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(1.18); } 30% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(1); } 80% { opacity: 1; } 100% { transform: translate(-50%, -64%) rotate(var(--rot, -13deg)) scale(1); opacity: 0; } }
 .char-dog.barking .dog-sit { visibility: hidden; }
 .bark-fig { object-fit: contain; object-position: 50% 100%; filter: brightness(.97); }
