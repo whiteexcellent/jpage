@@ -334,8 +334,8 @@ window.addEventListener("load", function () {
   if (AC) {
     try {
       ctx = new AC();
-      var left = 2, one = function () { if (--left === 0) loaded(); };
-      ["bark", "caleb"].forEach(function (n) {
+      var left = 3, one = function () { if (--left === 0) loaded(); };
+      ["bark", "caleb", "marcelo"].forEach(function (n) {
         fetch("sound/" + n + ".mp3").then(function (r) { return r.arrayBuffer(); })
           .then(function (ab) { return new Promise(function (ok, no) { ctx.decodeAudioData(ab, ok, no); }); })
           .then(function (b) { bufs[n] = b; one(); }).catch(one);
@@ -475,7 +475,7 @@ window.addEventListener("load", function () {
         var lane2 = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)").matches;
         var wb = world.getBoundingClientRect();
         pop("DON'T TOUCH AGAIN!", "hav warn", window.innerWidth / 2, lane2 ? Math.max(wb.top + 50, 60) : window.innerHeight * .34, 1500, lane2 ? .8 : .62);
-        shake(); setTimeout(shake, 300); mTaps = 0;
+        playSfx("marcelo"); shake(); setTimeout(shake, 300); mTaps = 0;
       }
     }, true);
   }
@@ -483,7 +483,7 @@ window.addEventListener("load", function () {
   /* --- Caleb Grace: üstünde bekleyince / basılı tutunca uyarır --- */
   var cal = charHit("black");
   if (cal) {
-    var cTimer = 0, cLast = 0, cSwallow = false, cx0 = 0, cy0 = 0;
+    var cTimer = 0, cLast = 0;
     function say2() {
       if (Date.now() - cLast < 8000) return;
       cLast = Date.now();
@@ -502,13 +502,11 @@ window.addEventListener("load", function () {
     }
     cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 800); } });
     cal.hit.addEventListener("pointerleave", function () { clearTimeout(cTimer); });
-    cal.hit.addEventListener("pointerdown", function (e) {
-      if (e.pointerType === "mouse") return;
-      cx0 = e.clientX; cy0 = e.clientY; cSwallow = false; clearTimeout(cTimer);
-      cTimer = setTimeout(function () { if (Date.now() - cLast >= 8000) { cSwallow = true; } say2(); }, 550);
-    });
-    cal.hit.addEventListener("pointermove", function (e) { if (e.pointerType !== "mouse" && (Math.abs(e.clientX - cx0) > 12 || Math.abs(e.clientY - cy0) > 12)) clearTimeout(cTimer); });
-    ["pointerup", "pointercancel"].forEach(function (ev) { cal.hit.addEventListener(ev, function () { clearTimeout(cTimer); }); });
-    cal.hit.addEventListener("click", function (e) { if (cSwallow) { cSwallow = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    /* dokunmatik: ilk dokunuş konuşturur, sonraki dokunuş bağlantı penceresini açar */
+    var cTouch = false;
+    cal.hit.addEventListener("pointerdown", function (e) { cTouch = e.pointerType !== "mouse"; }, true);
+    cal.hit.addEventListener("click", function (e) {
+      if (cTouch && Date.now() - cLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); say2(); }
+    }, true);
   }
 })();
