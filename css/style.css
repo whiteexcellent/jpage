@@ -674,7 +674,7 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 @keyframes shake { 0%, 100% { translate: 0 0; } 20% { translate: -5px 2px; } 40% { translate: 5px -2px; } 60% { translate: -3px 1px; } 80% { translate: 3px -1px; } }
 @media (prefers-reduced-motion: reduce) { .hav { animation-duration: 1s; } }
 
-.snd-hint { position: fixed; right: 12px; top: 60px; z-index: 31; padding: 8px 12px; border-radius: 10px; background: rgba(16, 14, 11, .92); border: 1px solid var(--line-hi); color: var(--accent-hi); font: 600 13px/1.2 var(--font-body); opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .2s; pointer-events: none; }
+.snd-hint { position: fixed; right: 12px; top: 60px; z-index: 31; max-width: min(260px, calc(100vw - 24px)); padding: 8px 12px; border-radius: 10px; background: rgba(16, 14, 11, .92); border: 1px solid var(--line-hi); color: var(--accent-hi); font: 600 13px/1.2 var(--font-body); opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .2s; pointer-events: none; }
 .snd-hint.on { opacity: 1; transform: none; }
 .snd.attn { color: var(--accent-fg); background: var(--accent); border-color: transparent; animation: pulse 1s ease-in-out 3; }
 @keyframes pulse { 50% { transform: scale(1.12); } }
