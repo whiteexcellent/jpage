@@ -335,7 +335,18 @@ window.addEventListener("load", function () {
   }
   /* HAV! yazıları ekrana dağılır; köpeğin üstüne binmez */
   var SLOTS = [[16, 20, -12], [82, 16, 10], [50, 9, -5], [12, 46, -8], [88, 44, 12], [20, 70, 9], [80, 68, -10], [50, 32, 6]];
+  var laneMq = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)");
   function pick(n) {
+    if (laneMq.matches) {
+      /* telefon: yazılar karakter kutusunun üst şeridinde kalır, karakterlerin ve kartların üstüne taşmaz */
+      var b = world.getBoundingClientRect(), L = Math.max(b.left, 0), R = Math.min(b.right, window.innerWidth);
+      var span = (R - L) - 80, res = [], order = [0, 2, 1, 3].slice(0, n);
+      order.forEach(function (k, i) {
+        var x = L + 40 + span * (k + .5) / 4 + (Math.random() - .5) * span * .08;
+        res.push([x, Math.max(b.top + 24 + (i % 2) * 22, 34), [-10, 9, -6, 11][i]]);
+      });
+      return res;
+    }
     var r = sprite.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight, out = [];
     var pool = SLOTS.slice().sort(function () { return Math.random() - .5; });
     pool.forEach(function (s) {
