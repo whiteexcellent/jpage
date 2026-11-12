@@ -327,11 +327,31 @@ window.addEventListener("load", function () {
   /* --- Bob (K9): okşayınca havlar --- */
   var dog = world.querySelector(".char-dog"), hit = dog && dog.querySelector(".hit"), sprite = dog && dog.querySelector(".sprite");
   if (!hit) return;
-  var audio = null, warmed = false, busy = false, last = 0;
+  var warmed = false, busy = false, last = 0, ready = false, ctx = null, buf = null, waiters = [];
+  /* ses (19 KB) sayfa açılır açılmaz indirilip çözülür; ilk havlamada anında çalsın */
+  var AC = window.AudioContext || window.webkitAudioContext;
+  function loaded() { ready = true; var w = waiters; waiters = []; w.forEach(function (f) { f(); }); }
+  if (AC) {
+    try {
+      ctx = new AC();
+      fetch("sound/bark.mp3").then(function (r) { return r.arrayBuffer(); })
+        .then(function (ab) { return new Promise(function (ok, no) { ctx.decodeAudioData(ab, ok, no); }); })
+        .then(function (b) { buf = b; loaded(); }).catch(function () { ctx = null; loaded(); });
+    } catch (e) { ctx = null; loaded(); }
+  } else { loaded(); }
+  /* tarayıcı ilk kullanıcı dokunuşuna kadar sesi askıda tutabilir; ilk dokunuşta aç */
+  function unlock() { if (ctx && ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} } }
+  ["pointerdown", "touchstart", "keydown"].forEach(function (ev) { window.addEventListener(ev, unlock, { passive: true }); });
+  function playBark() {
+    if (!soundOn || !ctx || !buf) return;
+    try {
+      if (ctx.state === "suspended") ctx.resume();
+      var s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start(0);
+    } catch (e) {}
+  }
   function warm() {
     if (warmed) return; warmed = true;
     new Image().src = "img/bark.webp";
-    audio = new Audio("sound/bark.mp3"); audio.preload = "auto";
   }
   /* HAV! yazıları ekrana dağılır; köpeğin üstüne binmez */
   var SLOTS = [[12, 18, -12], [88, 16, 10], [8, 40, -8], [92, 42, 12], [14, 64, 9], [87, 66, -10], [24, 32, 6], [76, 30, -6], [20, 84, -9], [80, 84, 8]];
@@ -371,6 +391,15 @@ window.addEventListener("load", function () {
   function bark() {
     if (busy || Date.now() - last < 4000) return;
     busy = true; warm();
+    /* ses henüz çözülmediyse en fazla 1 sn bekle ki görüntü ve ses birlikte başlasın */
+    if (soundOn && !ready) {
+      var fired = false, go = function () { if (fired) return; fired = true; run(); };
+      waiters.push(go); setTimeout(go, 1000);
+      return;
+    }
+    run();
+  }
+  function run() {
     var sitting = !dog.classList.contains("asleep");
     var im = null;
     if (sitting && !calm.matches) {
@@ -378,7 +407,7 @@ window.addEventListener("load", function () {
       im.src = "img/bark.webp?" + Date.now(); sprite.appendChild(im);
     }
     dog.classList.add("barking");
-    if (soundOn && audio) { try { audio.currentTime = 0; var p = audio.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    playBark();
     var sp = pick(5);
     say("HAV!", 250, sp[0] || [100, 100, -10]); say("HAV!", 480, sp[1] || [200, 160, 10]); shake(); setTimeout(shake, 250);
     say("HAV!", 1900, sp[2] || [100, 300, 8]); say("HAV!", 2100, sp[3] || [250, 250, -8]); setTimeout(shake, 1900);
