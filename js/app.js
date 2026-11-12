@@ -270,7 +270,7 @@ document.getElementById("yr").textContent = new Date().getFullYear();
     h.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse" && document.activeElement !== h) setActive(null); });
     h.addEventListener("focus", function () { if (h.matches(":focus-visible")) setActive(c); });
     h.addEventListener("blur", function () { setActive(null); });
-    h.addEventListener("click", function () { openGo(h.dataset.id, h); });
+    h.addEventListener("click", function () { if (c.classList.contains("barking")) return; openGo(h.dataset.id, h); });
     h.addEventListener("keydown", function (e) {
       var i = hits.indexOf(h), n = null;
       if (e.key === "ArrowRight") n = hits[Math.min(i + 1, hits.length - 1)];
@@ -308,3 +308,75 @@ window.addEventListener("load", function () {
   var warm = function () { (narrow ? [] : ["img/dog_sleep.webp", "img/coffin_open.webp"]).forEach(function (u) { new Image().src = u; }); };
   if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 4000 }); else setTimeout(warm, 1500);
 });
+
+/* ===================== Gizli sürprizler ===================== */
+(function () {
+  var world = document.getElementById("world"), fx = document.getElementById("fx"), snd = document.getElementById("snd");
+  var calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var soundOn = true;
+  try { soundOn = localStorage.getItem("snd") !== "off"; } catch (e) {}
+  function paint() { snd.setAttribute("aria-pressed", String(soundOn)); snd.setAttribute("aria-label", soundOn ? "Efekt seslerini kapat" : "Efekt seslerini aç"); snd.classList.toggle("off", !soundOn); }
+  paint();
+  snd.addEventListener("click", function () {
+    soundOn = !soundOn; paint();
+    try { localStorage.setItem("snd", soundOn ? "on" : "off"); } catch (e) {}
+  });
+
+  function shake() { if (calm.matches) return; world.classList.remove("shake"); void world.offsetWidth; world.classList.add("shake"); }
+
+  /* --- Bob (K9): okşayınca havlar --- */
+  var dog = world.querySelector(".char-dog"), hit = dog && dog.querySelector(".hit"), sprite = dog && dog.querySelector(".sprite");
+  if (!hit) return;
+  var audio = null, warmed = false, busy = false, last = 0;
+  function warm() {
+    if (warmed) return; warmed = true;
+    new Image().src = "img/bark.webp";
+    audio = new Audio("sound/bark.mp3"); audio.preload = "auto";
+  }
+  function say(txt, cls, at) {
+    setTimeout(function () {
+      var r = sprite.getBoundingClientRect(), s = document.createElement("span");
+      s.className = "hav " + cls; s.textContent = txt;
+      s.style.left = (r.left + r.width * (cls === "l" ? -0.3 : cls === "r" ? 1.3 : 0.5)) + "px";
+      s.style.top = (r.top + r.height * (cls === "t" ? -0.12 : 0.3)) + "px";
+      fx.appendChild(s);
+      setTimeout(function () { s.remove(); }, 1100);
+    }, at);
+  }
+  function bark() {
+    if (busy || Date.now() - last < 4000) return;
+    busy = true; warm();
+    var sitting = !dog.classList.contains("asleep");
+    var im = null;
+    if (sitting && !calm.matches) {
+      im = new Image(); im.className = "fig bark-fig"; im.alt = ""; im.draggable = false;
+      im.src = "img/bark.webp?" + Date.now(); sprite.appendChild(im);
+    }
+    dog.classList.add("barking");
+    if (soundOn && audio) { try { audio.currentTime = 0; var p = audio.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    say("HAV!", "l", 250); say("HAV!", "r", 520); shake(); setTimeout(shake, 250);
+    say("HAV!", "t", 1900); say("HAV!", "l", 2100); setTimeout(shake, 1900);
+    setTimeout(function () {
+      dog.classList.remove("barking"); if (im) im.remove();
+      busy = false; last = Date.now();
+    }, 2600);
+  }
+
+  /* okşama: aynı eksende art arda yön değiştiren kısa hareketler */
+  var px = 0, py = 0, dx = 0, dy = 0, rev = 0, t0 = 0, ax = 0, ay = 0;
+  function reset() { rev = 0; dx = 0; dy = 0; t0 = 0; }
+  hit.addEventListener("pointerenter", warm);
+  hit.addEventListener("pointerdown", function (e) { warm(); px = e.clientX; py = e.clientY; reset(); });
+  hit.addEventListener("pointermove", function (e) {
+    if (e.pointerType === "mouse" ? false : e.buttons === 0) return;
+    var mx = e.clientX - px, my = e.clientY - py;
+    if (Math.abs(mx) < 6 && Math.abs(my) < 6) return;
+    px = e.clientX; py = e.clientY;
+    var now = performance.now();
+    if (!t0 || now - t0 > 1800) { reset(); t0 = now; }
+    var useX = Math.abs(mx) >= Math.abs(my), d = useX ? mx : my, prev = useX ? dx : dy;
+    if (prev && Math.sign(d) !== Math.sign(prev)) rev++;
+    if (useX) dx = d; else dy = d;
+    if (rev >= 5) { reset(); bark(); }
+  });
+})();

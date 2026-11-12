@@ -657,3 +657,20 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
   .go-card { padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
 }
 @keyframes sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ===== Gizli sürprizler ===== */
+.snd { position: fixed; right: 12px; bottom: 12px; z-index: 30; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--card-sub); background: rgba(16, 14, 11, .72); border: 1px solid var(--line); cursor: pointer; backdrop-filter: blur(6px); }
+.snd:hover { color: var(--accent-hi); border-color: var(--line-hi); }
+.snd:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.snd svg { grid-area: 1/1; width: 20px; height: 20px; }
+.snd .i-off, .snd.off .i-on { display: none; } .snd.off .i-off { display: block; }
+.fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+.hav { position: fixed; font: 900 clamp(26px, 4.2vw, 56px)/1 var(--font-body); letter-spacing: .02em; color: #ff2a2a; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; text-shadow: 0 3px 0 #7a0b0b, 0 6px 14px rgba(0, 0, 0, .5); transform: translate(-50%, -50%) rotate(-12deg) scale(0); animation: hav 1s cubic-bezier(.2, 1.4, .4, 1) forwards; white-space: nowrap; }
+.hav.l { transform-origin: 100% 50%; } .hav.r { --rot: 11deg; } .hav.t { --rot: -4deg; }
+@keyframes hav { 0% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(0); opacity: 1; } 18% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(1.18); } 30% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(1); } 80% { opacity: 1; } 100% { transform: translate(-50%, -64%) rotate(var(--rot, -13deg)) scale(1); opacity: 0; } }
+.char-dog.barking .dog-sit { visibility: hidden; }
+.bark-fig { object-fit: contain; object-position: 50% 100%; filter: brightness(.97); }
+.char-dog .hit { touch-action: pan-x; }
+.world.shake { animation: shake .22s linear; }
+@keyframes shake { 0%, 100% { translate: 0 0; } 20% { translate: -5px 2px; } 40% { translate: 5px -2px; } 60% { translate: -3px 1px; } 80% { translate: 3px -1px; } }
+@media (prefers-reduced-motion: reduce) { .hav { animation-duration: 1s; } }
