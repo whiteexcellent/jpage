@@ -333,12 +333,25 @@ window.addEventListener("load", function () {
     new Image().src = "img/bark.webp";
     audio = new Audio("sound/bark.mp3"); audio.preload = "auto";
   }
-  function say(txt, cls, at) {
+  /* HAV! yazıları ekrana dağılır; köpeğin üstüne binmez */
+  var SLOTS = [[16, 20, -12], [82, 16, 10], [50, 9, -5], [12, 46, -8], [88, 44, 12], [20, 70, 9], [80, 68, -10], [50, 32, 6]];
+  function pick(n) {
+    var r = sprite.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight, out = [];
+    var pool = SLOTS.slice().sort(function () { return Math.random() - .5; });
+    pool.forEach(function (s) {
+      if (out.length >= n) return;
+      var x = W * s[0] / 100 + (Math.random() - .5) * W * .05, y = H * s[1] / 100 + (Math.random() - .5) * H * .05;
+      if (x > r.left - 90 && x < r.right + 90 && y > r.top - 60 && y < r.bottom + 30) return;
+      out.push([x, y, s[2]]);
+    });
+    return out;
+  }
+  function say(txt, at, slot) {
     setTimeout(function () {
-      var r = sprite.getBoundingClientRect(), s = document.createElement("span");
-      s.className = "hav " + cls; s.textContent = txt;
-      s.style.left = (r.left + r.width * (cls === "l" ? -0.3 : cls === "r" ? 1.3 : 0.5)) + "px";
-      s.style.top = (r.top + r.height * (cls === "t" ? -0.12 : 0.3)) + "px";
+      var s = document.createElement("span");
+      s.className = "hav"; s.textContent = txt;
+      s.style.left = slot[0] + "px"; s.style.top = slot[1] + "px"; s.style.setProperty("--rot", slot[2] + "deg");
+      s.style.fontSize = (Math.random() < .35 ? "1.35em" : "1em");
       fx.appendChild(s);
       setTimeout(function () { s.remove(); }, 1100);
     }, at);
@@ -354,8 +367,9 @@ window.addEventListener("load", function () {
     }
     dog.classList.add("barking");
     if (soundOn && audio) { try { audio.currentTime = 0; var p = audio.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
-    say("HAV!", "l", 250); say("HAV!", "r", 520); shake(); setTimeout(shake, 250);
-    say("HAV!", "t", 1900); say("HAV!", "l", 2100); setTimeout(shake, 1900);
+    var sp = pick(5);
+    say("HAV!", 250, sp[0] || [100, 100, -10]); say("HAV!", 480, sp[1] || [200, 160, 10]); shake(); setTimeout(shake, 250);
+    say("HAV!", 1900, sp[2] || [100, 300, 8]); say("HAV!", 2100, sp[3] || [250, 250, -8]); setTimeout(shake, 1900);
     setTimeout(function () {
       dog.classList.remove("barking"); if (im) im.remove();
       busy = false; last = Date.now();
