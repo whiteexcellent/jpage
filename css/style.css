@@ -217,7 +217,8 @@ body {
 main {
   position: relative; z-index: 3;
   width: min(26.25em, 28vw); margin: 0 auto;
-  font-size: clamp(11.5px, 1.48vh, 16px);
+  /* sahne 1920x1080 tasarım alanıyla ölçekleniyor; sütun da aynı oranda büyüsün (üst sınır yok) */
+  font-size: max(11.5px, min(calc(100vw / 120), calc(100vh / 67.5)));
   padding-top: 1.1em; padding-bottom: .2em;
   display: flex; flex-direction: column; align-items: center;
 }
