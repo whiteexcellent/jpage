@@ -9,6 +9,7 @@ const CHARACTERS = {
   dog:        { name: "Bob (K9)",             url: "https://eightbornv.com/fandom/bob-5cd9a8ef4a" },
   black:      { name: "Caleb Grace",          url: "https://eightbornv.com/fandom/caleb-grace-2f68f94afd" },
   beard:      { name: "Hjalmarr",             url: "https://eightbornv.com/fandom/hjalmarr-231cd2981c" },
+  tiago:      { name: "Tiago Tanrıkulu",      url: "https://eightbornv.com/fandom/tiago-tanrikulu" },
   mustache:   { name: "Wesley Harper",        url: "https://eightbornv.com/fandom/wesley-harper-e244cf63" }
 };
 
