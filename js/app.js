@@ -672,9 +672,20 @@ window.addEventListener("load", function () {
       outro: function (overlay, finish, timers) {
         var box = document.createElement("div");
         var message = document.createElement("b");
-        box.className = "k-out";
+        box.className = "k-out back";
         message.className = "k-t";
         message.textContent = "…şaka, serbestsin.";
+        var figure = police.hit.closest(".char").querySelector(".fig");
+        if (figure) {
+          var face = document.createElement("span");
+          var portrait = document.createElement("img");
+          face.className = "k-face";
+          portrait.alt = CHARACTERS[id].name;
+          portrait.draggable = false;
+          portrait.src = figure.currentSrc || figure.src;
+          face.appendChild(portrait);
+          box.appendChild(face);
+        }
         box.appendChild(message);
         overlay.appendChild(box);
         overlay.classList.add("black");
