@@ -574,7 +574,7 @@ window.addEventListener("load", function () {
       if (done) return; done = true; timers.forEach(clearTimeout);
       document.removeEventListener("keydown", onKey); cancelAnimationFrame(raf2);
       ov.classList.remove("on"); try { v.pause(); } catch (e) {}
-      setTimeout(function () { ov.remove(); v.currentTime = 0; sceneBusy = false; sceneLast[cfg.name] = Date.now(); }, 450);
+      setTimeout(function () { ov.remove(); v.currentTime = 0; sceneBusy = false; sceneLast[cfg.name] = Date.now(); if (cfg.onClose) cfg.onClose(sceneLast[cfg.name]); }, 450);
     }
     function onKey(e) { if (e.key === "Escape") end(); }
     ov.addEventListener("click", end);
@@ -714,8 +714,10 @@ window.addEventListener("load", function () {
       event.preventDefault();
       event.stopImmediatePropagation();
       if (sceneBusy) return;
-      scene(Object.assign({}, cfg, { lastPlayed: lastTapScene, wait: 60000 }));
-      lastTapScene = Date.now();
+      scene(Object.assign({}, cfg, {
+        lastPlayed: lastTapScene, wait: 60000,
+        onClose: function (closedAt) { lastTapScene = closedAt; }
+      }));
     }, true);
   });
 })();
