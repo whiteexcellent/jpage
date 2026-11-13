@@ -38,6 +38,42 @@ const YOUTUBE = {
 
 document.getElementById("yr").textContent = new Date().getFullYear();
 
+/* ---------- İlk giriş içerik uyarısı ---------- */
+(function () {
+  var dialog = document.getElementById("warning");
+  var accept = document.getElementById("warning-accept");
+  var leave = document.getElementById("warning-leave");
+  if (!dialog || !accept || !leave) return;
+
+  var accepted = false;
+  try { accepted = sessionStorage.getItem("janto.content-warning.v1") === "accepted"; }
+  catch (e) {}
+
+  if (accepted) return;
+
+  function preventDismiss(event) {
+    event.preventDefault();
+  }
+  dialog.addEventListener("cancel", preventDismiss);
+  dialog.addEventListener("click", function (event) {
+    if (event.target === dialog) event.preventDefault();
+  });
+
+  accept.addEventListener("click", function () {
+    try { sessionStorage.setItem("janto.content-warning.v1", "accepted"); }
+    catch (e) {}
+    dialog.close();
+  });
+
+  leave.addEventListener("click", function () {
+    window.location.replace("about:blank");
+  });
+
+  if (typeof dialog.showModal === "function") dialog.showModal();
+  else dialog.setAttribute("open", "");
+})();
+
+
 /* E-posta adresi sayfa kaynağında düz yazı olarak durmasın diye parçalı birleştirilir. */
 (function () {
   var a = document.getElementById("mail");
