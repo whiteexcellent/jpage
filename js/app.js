@@ -634,10 +634,10 @@ window.addEventListener("load", function () {
           var box = document.createElement("div"); box.className = "k-out";
           box.innerHTML = '<span class="k-face"><img alt="" draggable="false"></span><b class="k-t"></b>';
           box.querySelector("img").src = fig ? fig.getAttribute("src") : "";
-          var tt = box.querySelector(".k-t"); tt.textContent = "Hjalmarr kaçırıldı…";
+          var tt = box.querySelector(".k-t"); tt.textContent = "Hjalmarr seni kaçırdı…";
           ov.appendChild(box); ov.classList.add("black");
           requestAnimationFrame(function () { box.classList.add("on"); });
-          timers.push(setTimeout(function () { tt.textContent = "…şaka, geri döndü."; box.classList.add("back"); }, 2100), setTimeout(finish, 3700));
+          timers.push(setTimeout(function () { tt.textContent = "…şaka, geri döndün."; box.classList.add("back"); }, 2100), setTimeout(finish, 3700));
         }
       });
     }
