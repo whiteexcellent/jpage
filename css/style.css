@@ -719,3 +719,25 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 .k-face img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; transform: scale(2.1); transform-origin: 50% 0; }
 .k-out.back .k-face { filter: none; }
 .k-t { font: 700 15px/1.2 var(--font-body); letter-spacing: .04em; color: rgba(246, 239, 220, .85); text-align: center; }
+
+/* Police scene overlay */
+.scare.police-scene {
+  background: linear-gradient(90deg, #32050e, #08080d 25%, #08080d 75%, #091d49);
+}
+.police-title {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  color: white;
+  font-size: clamp(1.6rem, 6vw, 3rem);
+  text-shadow: 0 2px 8px #000, 0 0 18px #000;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.police-title.visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .police-title { transition: none; }
+}

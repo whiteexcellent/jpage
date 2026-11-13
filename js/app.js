@@ -583,6 +583,7 @@ window.addEventListener("load", function () {
     function started() {
       if (done) return;
       ov.classList.add("on"); if (actx) raf2 = requestAnimationFrame(glow);
+      if (cfg.setup) cfg.setup(ov, timers);
       (cfg.shakes || []).forEach(function (t) { timers.push(setTimeout(shake, t)); });
       if (cfg.lunge) { timers.push(setTimeout(function () { ov.classList.add("lunge"); }, cfg.lunge[0]), setTimeout(function () { ov.classList.remove("lunge"); }, cfg.lunge[1])); }
       timers.push(setTimeout(end, cfg.hardEnd || 12000));
@@ -649,4 +650,40 @@ window.addEventListener("load", function () {
       if (hjTouch && Date.now() - (sceneLast.hjalmarr || 0) >= 60000) { e.stopImmediatePropagation(); e.preventDefault(); kidnap(); }
     }, true);
   }
+  /* Police scene shares the existing video lifecycle and dismiss controls. */
+  ["graypolice", "suitman", "tiago", "mustache"].forEach(function (id) {
+    var police = charHit(id);
+    if (!police) return;
+    var timer = 0, touch = false;
+    var cfg = {
+      name: "kelepce", wait: 20000, hardEnd: 12000,
+      shakes: [1500], aria: "Sürpriz sahne, kapatmak için dokun",
+      setup: function (overlay, timers) {
+        overlay.classList.add("police-scene");
+        var title = document.createElement("strong");
+        title.className = "police-title";
+        title.textContent = "KELEPÇELENDİN";
+        overlay.appendChild(title);
+        timers.push(setTimeout(function () { title.classList.add("visible"); }, 2200));
+      }
+    };
+    police.hit.addEventListener("pointerenter", function (event) {
+      if (event.pointerType !== "mouse" || calm.matches) return;
+      prepScene(cfg.name);
+      clearTimeout(timer);
+      timer = setTimeout(function () { scene(cfg); }, 2000);
+    });
+    police.hit.addEventListener("pointerleave", function () { clearTimeout(timer); });
+    police.hit.addEventListener("pointerdown", function (event) {
+      touch = event.pointerType === "touch" || event.pointerType === "pen";
+    }, true);
+    police.hit.addEventListener("click", function (event) {
+      var show = touch && !calm.matches && event.detail !== 0 && Date.now() - (sceneLast[cfg.name] || 0) >= cfg.wait;
+      touch = false;
+      if (!sceneBusy && !show) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (show && !sceneBusy) scene(cfg);
+    }, true);
+  });
 })();
