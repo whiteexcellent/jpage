@@ -368,7 +368,8 @@ window.addEventListener("load", function () {
   }
   function warm() {
     if (warmed) return; warmed = true;
-    new Image().src = "img/bark.webp";
+    var pre = new Image(); pre.src = "img/bark.webp"; if (pre.decode) pre.decode().catch(function () {});
+    window.__barkPre = pre;
   }
   /* HAV! yazıları ekrana dağılır; köpeğin üstüne binmez */
   var SLOTS = [[12, 18, -12], [88, 16, 10], [8, 40, -8], [92, 42, 12], [14, 64, 9], [87, 66, -10], [24, 32, 6], [76, 30, -6], [20, 84, -9], [80, 84, 8]];
@@ -417,21 +418,29 @@ window.addEventListener("load", function () {
     run();
   }
   function run() {
-    var sitting = !dog.classList.contains("asleep");
+    var sitting = !dog.classList.contains("asleep"), lane = laneMq.matches;
     var im = null;
     if (sitting && !calm.matches) {
       im = new Image(); im.className = "fig bark-fig"; im.alt = ""; im.draggable = false;
-      im.src = "img/bark.webp?" + Date.now(); sprite.appendChild(im);
+      im.src = lane ? "img/bark.webp?" + Date.now() : "img/bark.webp";
     }
-    dog.classList.add("barking");
-    playBark();
-    var sp = pick(5);
-    say("HAV!", 250, sp[0] || [100, 100, -10]); say("HAV!", 480, sp[1] || [200, 160, 10]); shake(); setTimeout(shake, 250);
-    say("HAV!", 1900, sp[2] || [100, 300, 8]); say("HAV!", 2100, sp[3] || [250, 250, -8]); setTimeout(shake, 1900);
-    setTimeout(function () {
-      dog.classList.remove("barking"); if (im) im.remove();
-      busy = false; last = Date.now();
-    }, 2600);
+    function go() {
+      dog.classList.add("barking");
+      playBark();
+      var sp = pick(5);
+      say("HAV!", 250, sp[0] || [100, 100, -10]); say("HAV!", 480, sp[1] || [200, 160, 10]); shake(); setTimeout(shake, 250);
+      say("HAV!", 1900, sp[2] || [100, 300, 8]); say("HAV!", 2100, sp[3] || [250, 250, -8]); setTimeout(shake, 1900);
+      setTimeout(function () {
+        dog.classList.remove("barking"); if (im) im.remove();
+        busy = false; last = Date.now();
+      }, 2600);
+    }
+    if (!im) { go(); return; }
+    if (lane) { sprite.appendChild(im); go(); return; }
+    /* PC: oturan köpek, havlayan görsel çözülüp hazır olana kadar gizlenmez (anlık kaybolma olmasın) */
+    var fired = false, f = function () { if (fired) return; fired = true; sprite.appendChild(im); go(); };
+    if (im.decode) im.decode().then(f, f); else f();
+    setTimeout(f, 700);
   }
 
   /* okşama: aynı eksende art arda yön değiştiren kısa hareketler */
@@ -488,12 +497,12 @@ window.addEventListener("load", function () {
   if (mar) {
     var mTimer = 0, mLast = 0, mTouch = false;
     function mSay() {
-      if (Date.now() - mLast < 8000) return;
+      if (Date.now() - mLast < 5000) return;
       mLast = Date.now();
       /* ses: "Don't... touch again! — Hey, you heard me? — Don't touch again!" */
       speak(mar, "Marcelo Martinez", [[0, "¡Don't… touch again!", 1], [1450, "Hey, you heard me?"], [2400, "Don't touch again!", 1]], "marcelo", 3700);
     }
-    mar.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(mTimer); mTimer = setTimeout(mSay, 800); } });
+    mar.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(mTimer); mTimer = setTimeout(mSay, 400); } });
     mar.hit.addEventListener("pointerleave", function () { clearTimeout(mTimer); });
     mar.hit.addEventListener("pointerdown", function (e) { mTouch = e.pointerType !== "mouse"; }, true);
     mar.hit.addEventListener("click", function (e) {
@@ -511,7 +520,7 @@ window.addEventListener("load", function () {
       /* ses: "Hey homie, watch out! — Hey, you better watch out bro!" */
       speak(cal, "Caleb Grace", [[0, "Hey homie, watch out!"], [1350, "Hey, you better watch out bro!"]], "caleb", 3000);
     }
-    cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 800); } });
+    cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 1800); } });
     cal.hit.addEventListener("pointerleave", function () { clearTimeout(cTimer); });
     /* dokunmatik: ilk dokunuş konuşturur, sonraki dokunuş bağlantı penceresini açar */
     var cTouch = false;
@@ -521,28 +530,28 @@ window.addEventListener("load", function () {
     }, true);
   }
 
-  /* --- Cesare (tabut): sallayınca tabut açılır, iskelet ekrana atılır --- */
-  var cof = charHit("coffin");
-  if (cof) {
-    var vid = null, scaring = false, scareLast = 0;
-    function prepVideo() {
-      if (vid) return;
-      vid = document.createElement("video");
-      vid.preload = "auto"; vid.playsInline = true; vid.setAttribute("playsinline", ""); vid.disablePictureInPicture = true;
-      vid.src = vid.canPlayType('video/webm; codecs="vp9, opus"') ? "video/cesare.webm" : "video/cesare.mp4";
-      vid.load();
-    }
-    function scare() {
-      if (scaring || calm.matches || Date.now() - scareLast < 12000) return;
-      scaring = true; prepVideo();
-      var ov = document.createElement("div"), v = vid, done = false, timers = [];
-      ov.className = "scare"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-label", "Sürpriz video, kapatmak için dokun");
-      ov.innerHTML = '<small>kapatmak için dokun</small>';
-      /* geniş ekranda dikey videonun iki yanı: videodan türeyen bulanık ışık + yükselen kıvılcımlar */
-      var wide = window.matchMedia("(min-aspect-ratio: 1/1)").matches, amb = null, actx = null, raf2 = 0, lastDraw = 0;
-      if (wide) {
-        amb = document.createElement("canvas"); amb.width = 64; amb.height = 114; amb.className = "amb"; amb.setAttribute("aria-hidden", "true");
-        actx = amb.getContext("2d"); ov.appendChild(amb);
+  /* ===== Tam ekran video sahneleri (Cesare, Hjalmarr) ===== */
+  var vids = {}, sceneBusy = false, sceneLast = {};
+  function prepScene(name) {
+    if (vids[name]) return vids[name];
+    var v = document.createElement("video");
+    v.preload = "auto"; v.playsInline = true; v.setAttribute("playsinline", ""); v.disablePictureInPicture = true;
+    v.src = v.canPlayType('video/webm; codecs="vp9, opus"') ? "video/" + name + ".webm" : "video/" + name + ".mp4";
+    v.load(); return (vids[name] = v);
+  }
+  /* cfg: { name, aria, wait, embers, shakes:[ms], lunge:[on,off], outro(ov, finish) } */
+  function scene(cfg) {
+    if (sceneBusy || calm.matches || Date.now() - (sceneLast[cfg.name] || 0) < (cfg.wait || 12000)) return;
+    sceneBusy = true;
+    var v = prepScene(cfg.name), ov = document.createElement("div"), done = false, timers = [];
+    ov.className = "scare " + cfg.name; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-label", cfg.aria || "Sürpriz video, kapatmak için dokun");
+    ov.innerHTML = '<small>kapatmak için dokun</small>';
+    /* geniş ekranda dikey videonun iki yanı: videodan türeyen bulanık ışık (+ kıvılcımlar) */
+    var wide = window.matchMedia("(min-aspect-ratio: 1/1)").matches, actx = null, raf2 = 0, lastDraw = 0;
+    if (wide) {
+      var amb = document.createElement("canvas"); amb.width = 64; amb.height = 114; amb.className = "amb"; amb.setAttribute("aria-hidden", "true");
+      actx = amb.getContext("2d"); ov.appendChild(amb);
+      if (cfg.embers) {
         var em = document.createElement("div"); em.className = "embers"; em.setAttribute("aria-hidden", "true");
         for (var k = 0; k < 22; k++) {
           var sp = document.createElement("i"), side = k % 2 ? 1 : -1;
@@ -553,38 +562,46 @@ window.addEventListener("load", function () {
         }
         ov.appendChild(em);
       }
-      ov.insertBefore(v, ov.firstChild);
-      function glow(ts) {
-        if (done || !actx) return;
-        if (ts - lastDraw > 66) { lastDraw = ts; try { actx.drawImage(v, 0, 0, 64, 114); } catch (e) {} }
-        raf2 = requestAnimationFrame(glow);
-      }
-      function end() {
-        if (done) return; done = true; timers.forEach(clearTimeout);
-        document.removeEventListener("keydown", onKey); cancelAnimationFrame(raf2);
-        ov.classList.remove("on"); try { v.pause(); } catch (e) {}
-        setTimeout(function () { ov.remove(); v.currentTime = 0; scaring = false; scareLast = Date.now(); }, 350);
-      }
-      function onKey(e) { if (e.key === "Escape") end(); }
-      ov.addEventListener("click", end); document.addEventListener("keydown", onKey);
-      v.addEventListener("ended", end, { once: true });
-      document.body.appendChild(ov);
-      v.muted = !soundOn; v.currentTime = 0;
-      function started() {
-        if (done) return;
-        ov.classList.add("on"); if (actx) raf2 = requestAnimationFrame(glow);
-        timers.push(setTimeout(function () { shake(); ov.classList.add("lunge"); }, 4300), setTimeout(shake, 4900), setTimeout(function () { ov.classList.remove("lunge"); }, 5600), setTimeout(end, 7700));
-      }
-      v.addEventListener("playing", started, { once: true });
-      var p = v.play();
-      if (p && p.catch) p.catch(function () {
-        /* tarayıcı sesli oynatmayı engelledi: sessiz oynat, ipucu göster */
-        v.muted = true; var q = v.play(); if (soundOn) hint(); if (q && q.catch) q.catch(end);
-      });
-      timers.push(setTimeout(function () { if (!ov.classList.contains("on")) end(); }, 4000));
     }
-    cof.hit.addEventListener("pointerenter", prepVideo);
-    cof.hit.addEventListener("pointerdown", prepVideo);
+    ov.insertBefore(v, ov.firstChild);
+    function glow(ts) {
+      if (done || !actx) return;
+      if (ts - lastDraw > 66) { lastDraw = ts; try { actx.drawImage(v, 0, 0, 64, 114); } catch (e) {} }
+      raf2 = requestAnimationFrame(glow);
+    }
+    function end() {
+      if (done) return; done = true; timers.forEach(clearTimeout);
+      document.removeEventListener("keydown", onKey); cancelAnimationFrame(raf2);
+      ov.classList.remove("on"); try { v.pause(); } catch (e) {}
+      setTimeout(function () { ov.remove(); v.currentTime = 0; sceneBusy = false; sceneLast[cfg.name] = Date.now(); }, 450);
+    }
+    function onKey(e) { if (e.key === "Escape") end(); }
+    ov.addEventListener("click", end); document.addEventListener("keydown", onKey);
+    v.addEventListener("ended", function () { if (done) return; if (cfg.outro) { cancelAnimationFrame(raf2); cfg.outro(ov, end, timers); } else end(); }, { once: true });
+    document.body.appendChild(ov);
+    v.muted = !soundOn; v.currentTime = 0;
+    function started() {
+      if (done) return;
+      ov.classList.add("on"); if (actx) raf2 = requestAnimationFrame(glow);
+      (cfg.shakes || []).forEach(function (t) { timers.push(setTimeout(shake, t)); });
+      if (cfg.lunge) { timers.push(setTimeout(function () { ov.classList.add("lunge"); }, cfg.lunge[0]), setTimeout(function () { ov.classList.remove("lunge"); }, cfg.lunge[1])); }
+      timers.push(setTimeout(end, cfg.hardEnd || 12000));
+    }
+    v.addEventListener("playing", started, { once: true });
+    var p = v.play();
+    if (p && p.catch) p.catch(function () {
+      /* tarayıcı sesli oynatmayı engelledi: sessiz oynat, ipucu göster */
+      v.muted = true; var q = v.play(); if (soundOn) hint(); if (q && q.catch) q.catch(end);
+    });
+    timers.push(setTimeout(function () { if (!ov.classList.contains("on")) end(); }, 4000));
+  }
+
+  /* --- Cesare (tabut): sallayınca tabut açılır, iskelet ekrana atılır --- */
+  var cof = charHit("coffin");
+  if (cof) {
+    var scareCfg = { name: "cesare", wait: 12000, embers: true, shakes: [4300, 4900], lunge: [4300, 5600], hardEnd: 7700 };
+    cof.hit.addEventListener("pointerenter", function () { prepScene("cesare"); });
+    cof.hit.addEventListener("pointerdown", function () { prepScene("cesare"); });
     /* sallama: art arda yön değiştiren hareketler */
     var sx = 0, sy = 0, sdx = 0, sdy = 0, srev = 0, st0 = 0;
     function sreset() { srev = 0; sdx = 0; sdy = 0; st0 = 0; }
@@ -599,8 +616,37 @@ window.addEventListener("load", function () {
       var useX = Math.abs(mx) >= Math.abs(my), d = useX ? mx : my, prev = useX ? sdx : sdy;
       if (prev && Math.sign(d) !== Math.sign(prev)) srev++;
       if (useX) sdx = d; else sdy = d;
-      if (srev >= 6) { sreset(); scare(); }
+      if (srev >= 6) { sreset(); scene(scareCfg); }
     });
-    cof.hit.addEventListener("click", function (e) { if (scaring) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    cof.hit.addEventListener("click", function (e) { if (sceneBusy) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  }
+
+  /* --- Hjalmarr: üstünde uzun süre beklersen (telefonda dokununca) kaçırılır --- */
+  var hj = charHit("beard");
+  if (hj) {
+    var hjTimer = 0, hjTouch = false;
+    function kidnap() {
+      scene({
+        name: "hjalmarr", wait: 20000, shakes: [3900, 4500], hardEnd: 12000, aria: "Sürpriz sahne, kapatmak için dokun",
+        outro: function (ov, finish, timers) {
+          /* video çuvalla biter: ekran tamamen kararır, küçük yüz ve yazı belirir, sonra geri döner */
+          var fig = hj.sprite.closest(".char").querySelector(".fig");
+          var box = document.createElement("div"); box.className = "k-out";
+          box.innerHTML = '<span class="k-face"><img alt="" draggable="false"></span><b class="k-t"></b>';
+          box.querySelector("img").src = fig ? fig.getAttribute("src") : "";
+          var tt = box.querySelector(".k-t"); tt.textContent = "Hjalmarr kaçırıldı…";
+          ov.appendChild(box); ov.classList.add("black");
+          requestAnimationFrame(function () { box.classList.add("on"); });
+          timers.push(setTimeout(function () { tt.textContent = "…şaka, geri döndü."; box.classList.add("back"); }, 2100), setTimeout(finish, 3700));
+        }
+      });
+    }
+    hj.hit.addEventListener("pointerenter", function (e) { prepScene("hjalmarr"); if (e.pointerType === "mouse") { clearTimeout(hjTimer); hjTimer = setTimeout(kidnap, 2000); } });
+    hj.hit.addEventListener("pointerleave", function () { clearTimeout(hjTimer); });
+    hj.hit.addEventListener("pointerdown", function (e) { hjTouch = e.pointerType !== "mouse"; prepScene("hjalmarr"); }, true);
+    hj.hit.addEventListener("click", function (e) {
+      if (sceneBusy) { e.stopImmediatePropagation(); e.preventDefault(); return; }
+      if (hjTouch && Date.now() - (sceneLast.hjalmarr || 0) >= 60000) { e.stopImmediatePropagation(); e.preventDefault(); kidnap(); }
+    }, true);
   }
 })();
