@@ -423,15 +423,15 @@ h1 {
 }
 
 /* ---------- Onay penceresi ---------- */
-dialog#go {
+dialog#go, dialog#warn {
   width: min(92vw, 26em); padding: 0; border: 1px solid rgba(232, 200, 114, .4); border-radius: 20px;
   background: linear-gradient(180deg, #221a0d 0%, #130e06 100%); color: var(--card-fg);
   font: 16px/1.4 var(--font-body);
   box-shadow: 0 30px 80px rgba(0, 0, 0, .7), 0 0 0 1px rgba(0, 0, 0, .45);
   overflow: hidden;
 }
-dialog#go[open] { animation: pop .22s cubic-bezier(.2, .8, .2, 1); }
-dialog#go::backdrop { background: rgba(4, 3, 1, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+dialog#go[open], dialog#warn[open] { animation: pop .22s cubic-bezier(.2, .8, .2, 1); }
+dialog#go::backdrop, dialog#warn::backdrop { background: rgba(4, 3, 1, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 @keyframes pop { from { transform: translateY(10px) scale(.97); } to { transform: none; } }
 .go-card { position: relative; padding: 24px 22px 20px; display: flex; flex-direction: column; gap: 14px; }
 .go-card::after {
@@ -529,7 +529,7 @@ dialog#go::backdrop { background: rgba(4, 3, 1, .72); -webkit-backdrop-filter: b
 
 @media (prefers-reduced-motion: reduce) {
   .ref, .fog { display: none; }
-  .fog::before, .fog::after, .sprite, .logo-wrap::before, .yt-badge .dot, .yt-play::after, .yt-card:hover .yt-bar i, .yt-card:hover .yt-thumb::before, dialog#go[open] { animation: none; }
+  .fog::before, .fog::after, .sprite, .logo-wrap::before, .yt-badge .dot, .yt-play::after, .yt-card:hover .yt-bar i, .yt-card:hover .yt-thumb::before, dialog#go[open], dialog#warn[open] { animation: none; }
   .spurt { display: none; }
   .sprite, .fig, .pad, .glow, .tag, .link, .yt-img, .yt-play, .yt-btn { transition: none; }
 }
@@ -629,11 +629,11 @@ h1 {
 .contact { flex-wrap: wrap; text-align: center; } .contact span { text-align: center; }
 
 /* ===== Sade yönlendirme penceresi ===== */
-dialog#go {
+dialog#go, dialog#warn {
   width: min(92vw, 24em); background: #14110d; border: 1px solid rgba(255, 255, 255, .1); border-radius: 22px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
 }
-dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
+dialog#go::backdrop, dialog#warn::backdrop { background: rgba(6, 5, 3, .7); }
 .go-card { padding: 22px; gap: 16px; }
 .go-card::before, .go-card::after { display: none; }
 .go-who { gap: 14px; }
@@ -652,8 +652,8 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
 .btn.primary:hover { background: var(--accent-hi); }
 @media (max-width: 600px) {
-  dialog#go { width: 100%; max-width: none; margin: auto 0 0; border-radius: 22px 22px 0 0; border-bottom: 0; }
-  dialog#go[open] { animation: sheet .26s cubic-bezier(.2, .8, .2, 1); }
+  dialog#go, dialog#warn { width: 100%; max-width: none; margin: auto 0 0; border-radius: 22px 22px 0 0; border-bottom: 0; }
+  dialog#go[open], dialog#warn[open] { animation: sheet .26s cubic-bezier(.2, .8, .2, 1); }
   .go-card { padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
 }
 @keyframes sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -768,3 +768,13 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 @media (prefers-reduced-motion: reduce) {
   .scare.kelepce { display: none; }
 }
+
+/* Efekt uyarısı */
+.warn-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--accent-hi); background: rgba(230, 195, 106, .1); border: 1px solid var(--line-hi); }
+.warn-ic svg { width: 24px; height: 24px; }
+#warn-title { margin: 0; font: 700 20px/1.25 var(--font-body); color: #f6efdc; }
+.warn-text { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--card-sub); }
+.warn-text b { color: #f6efdc; font-weight: 700; }
+.fx-link { margin-left: .8em; padding: .35em .2em; background: none; border: 0; border-bottom: 1px dotted currentColor; color: inherit; font: inherit; cursor: pointer; opacity: .8; }
+.fx-link:hover { opacity: 1; color: var(--accent-hi); }
+.fx-link:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }

@@ -312,11 +312,28 @@ window.addEventListener("load", function () {
 /* ===================== Gizli sürprizler ===================== */
 (function () {
   var world = document.getElementById("world"), fx = document.getElementById("fx"), snd = document.getElementById("snd");
-  var calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var mqCalm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  /* efektler: ilk girişte onay istenir; "efektsiz" seçilirse tüm sürprizler kapanır */
+  var fxOff = false, fxChosen = false, calm = { get matches() { return mqCalm.matches || fxOff; } };
+  try { var fxv = localStorage.getItem("fx"); fxOff = fxv === "off"; fxChosen = fxv === "on" || fxv === "off"; } catch (e) {}
   var soundOn = true;
   try { soundOn = localStorage.getItem("snd") !== "off"; } catch (e) {}
   function paint() { snd.setAttribute("aria-pressed", String(soundOn)); snd.setAttribute("aria-label", soundOn ? "Efekt seslerini kapat" : "Efekt seslerini aç"); snd.classList.toggle("off", !soundOn); }
   paint();
+  (function () {
+    var dlg = document.getElementById("warn"), link = document.getElementById("fx-link");
+    function save() { try { localStorage.setItem("fx", fxOff ? "off" : "on"); } catch (e) {} }
+    function label() { link.textContent = fxOff ? "Efektler: kapalı" : "Efektler: açık"; link.setAttribute("aria-pressed", String(!fxOff)); }
+    link.hidden = false; label();
+    link.addEventListener("click", function () { fxOff = !fxOff; save(); label(); });
+    if (!dlg || typeof dlg.showModal !== "function") return;
+    function choose(off) { fxOff = off; fxChosen = true; save(); label(); dlg.close(); }
+    document.getElementById("warn-on").addEventListener("click", function () { choose(false); });
+    document.getElementById("warn-off").addEventListener("click", function () { choose(true); });
+    /* Esc: güvenli taraf, efektsiz devam */
+    dlg.addEventListener("cancel", function (e) { e.preventDefault(); choose(true); });
+    if (!fxChosen) { fxOff = true; label(); dlg.showModal(); document.getElementById("warn-on").focus(); }
+  })();
   snd.addEventListener("click", function () {
     soundOn = !soundOn; paint();
     try { localStorage.setItem("snd", soundOn ? "on" : "off"); } catch (e) {}
@@ -407,6 +424,7 @@ window.addEventListener("load", function () {
     }, at);
   }
   function bark() {
+    if (fxOff) return;
     if (busy || Date.now() - last < 4000) return;
     busy = true; warm();
     /* ses henüz çözülmediyse en fazla 1 sn bekle ki görüntü ve ses birlikte başlasın */
@@ -474,6 +492,7 @@ window.addEventListener("load", function () {
   /* --- Marcelo Martinez: ikinci dokunuşta uyarı çıkar --- */
   /* konuşma balonu: satırlar [gecikme_ms, metin, sarsıntı?] sırayla gösterilir */
   function speak(ch, name, lines, sfx, life) {
+    if (fxOff) return;
     var r = ch.sprite.getBoundingClientRect(), W = window.innerWidth;
     var el = document.createElement("div");
     el.className = "bubble";
