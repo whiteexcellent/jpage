@@ -51,3 +51,9 @@ Site saf statik dosyalardır, derleme ya da veritabanı gerekmez. Netlify'a öze
      */15 * * * * cd /var/www/jpage && git pull -q --ff-only
      ```
 6. **Güncelleme:** kodu değiştirince sunucuda `git pull` yeter. CSS ya da JS değiştirdiysen `index.html` içindeki `?v=` sürüm numarasını artır.
+
+## Efektler ve önbellek sürümü
+
+- Sürprizler `css/fx.css` + `js/fx.js` (sesler, videolar dahil) içindedir; yalnızca ziyaretçi ilk girişteki uyarıyı **Onaylıyorum** ile kabul ederse yüklenir. **Efektsiz devam et** seçilirse hiçbiri indirilmez. Seçim sayfa altındaki "Efektler" bağlantısından değiştirilebilir.
+- Efektler ciddi biçimde değişirse `js/app.js` içindeki `VER` artırılır; herkese uyarı yeniden gösterilir.
+- `img/`, `sound/`, `video/`, css veya js değişince `node scripts/bump-version.mjs` çalıştır (önbellek sürümünü günceller).

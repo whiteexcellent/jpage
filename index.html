@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="asset-v" content="202611132323">
 <title>Janto</title>
 <meta name="description" content="Janto resmi bağlantı sayfası: YouTube, Instagram, TikTok, Kick, Discord ve JantoLab.">
 <meta name="theme-color" content="#080604">
@@ -25,8 +26,8 @@
 <link rel="preload" href="fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/manrope-latin-ext-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/playfair-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=20261113i">
-<script src="js/app.js?v=20261113m" defer></script>
+<link rel="stylesheet" href="css/style.css?v=202611132323">
+<script src="js/app.js?v=202611132323" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -51,7 +52,7 @@
 <div class="grade" aria-hidden="true"></div>
 <div class="fog" aria-hidden="true"></div>
 
-<div class="stamp">© <span id="yr">2026</span> Janto · Tüm hakları saklıdır</div>
+<div class="stamp">© <span id="yr">2026</span> Janto · Tüm hakları saklıdır<button class="fx-link" id="fx-link" type="button" hidden aria-pressed="false">Efektler: kapalı</button></div>
 
 <main>
   <header class="hero">
@@ -70,7 +71,7 @@
   <ul class="links">
     <li>
       <div class="yt-card" id="yt" data-state="demo">
-        <a class="yt-thumb" id="yt-thumb" href="#" data-yt="video" aria-label="Son video, izle">
+        <a class="yt-thumb" id="yt-thumb" href="#" data-yt="video" aria-label="Son videoyu YouTube'da izle">
           <span class="yt-ph" id="yt-ph" aria-hidden="true"><img src="img/logo-240.webp" alt="" width="240" height="279" decoding="async"></span>
           <img class="yt-img" id="yt-img" alt="" hidden>
           <span class="film film-l" aria-hidden="true"></span><span class="film film-r" aria-hidden="true"></span>
@@ -243,7 +244,7 @@
   </div>
 </section>
 
-<button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Efekt seslerini kapat" title="Efekt sesleri">
+<button class="snd" id="snd" type="button" hidden aria-pressed="true" aria-label="Efekt seslerini kapat" title="Efekt sesleri">
     <svg class="i-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
     <svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
   </button>
@@ -266,18 +267,22 @@
     </div>
   </div>
 </dialog>
-
-  <dialog class="warning-dialog" id="warning" aria-labelledby="warning-title" aria-describedby="warning-description">
-    <div class="warning-card">
-      <span class="warning-kicker">İÇERİK UYARISI</span>
-      <h2 id="warning-title">Devam etmeden önce</h2>
-      <p id="warning-description">Bu sitede <strong>jumpscare</strong>, aniden değişen görüntüler, yüksek ses efektleri ve parlak ya da yanıp sönen ışıklar bulunabilir. Bu tür içerikler ışığa duyarlı kişiler veya bu efektlerden rahatsız olabilecek ziyaretçiler için uygun olmayabilir.</p>
-      <p class="warning-note">Devam ederek bu tür efektlerle karşılaşabileceğini anladığını ve siteye girmek istediğini onaylamış olursun.</p>
-      <div class="warning-actions">
-        <button class="warning-leave" id="warning-leave" type="button">Ayrıl</button>
-        <button class="warning-accept" id="warning-accept" type="button">Anladım, siteye gir</button>
-      </div>
+  <dialog id="warn" aria-labelledby="warn-title" aria-describedby="warn-desc">
+  <div class="warn-card" tabindex="-1">
+    <div class="warn-eyebrow">Başlamadan önce</div>
+    <h2 id="warn-title">Bu sayfada küçük sürprizler var</h2>
+    <p id="warn-desc" class="warn-desc">Bazı karakterlere dokununca şunlar olabilir:</p>
+    <ul class="warn-list">
+      <li>Ani sesler</li>
+      <li>Korkutan görüntüler</li>
+      <li>Yanıp sönen ışıklar ve ekran sarsıntısı</li>
+    </ul>
+    <p class="warn-sub">Işıktan veya seslerden etkileniyorsan efektsiz devam et. Bunu sayfanın altından istediğin zaman değiştirebilirsin.</p>
+    <div class="go-actions">
+      <button class="btn" id="warn-off" type="button">Efektsiz devam et</button>
+      <button class="btn primary" id="warn-on" type="button">Onaylıyorum</button>
     </div>
-  </dialog>
+  </div>
+</dialog>
 </body>
 </html>
