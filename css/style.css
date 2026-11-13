@@ -692,3 +692,9 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 @keyframes bub { from { transform: translate(-50%, -85%) scale(.9); opacity: 0; } }
 @keyframes bubout { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .bubble { animation: bubout .35s ease 2.55s forwards; } .eq b { animation: none; transform: scaleY(.6); } }
+
+.scare { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(0, 0, 0, .9); opacity: 0; transition: opacity .3s; cursor: pointer; overflow: hidden; }
+.scare.on { opacity: 1; }
+.scare video { width: min(100vw, 56.25vh); height: auto; aspect-ratio: 9 / 16; max-height: 100vh; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse 66% 62% at 50% 50%, #000 60%, transparent 100%), linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%); -webkit-mask-composite: source-in; mask-image: radial-gradient(ellipse 66% 62% at 50% 50%, #000 60%, transparent 100%), linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%); mask-composite: intersect; }
+.scare small { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; font: 600 12px var(--font-body); color: rgba(255, 255, 255, .5); letter-spacing: .08em; }
+.char-coffin .hit { touch-action: pan-x; }

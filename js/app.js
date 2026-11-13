@@ -465,17 +465,21 @@ window.addEventListener("load", function () {
   /* --- Marcelo Martinez: ikinci dokunuşta uyarı çıkar --- */
   var mar = charHit("orange");
   if (mar) {
-    var mTaps = 0, mLast = 0;
+    var mTaps = 0, mLast = 0, mBusy = 0;
     mar.hit.addEventListener("click", function (e) {
       var now = Date.now();
+      if (now < mBusy) { e.stopImmediatePropagation(); e.preventDefault(); return; }
       if (now - mLast > 20000) mTaps = 0;
       mLast = now; mTaps++;
       if (mTaps === 2) {
-        e.stopImmediatePropagation(); e.preventDefault();
+        e.stopImmediatePropagation(); e.preventDefault(); mTaps = 0; mBusy = now + 3500;
         var lane2 = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)").matches;
-        var wb = world.getBoundingClientRect();
-        pop("DON'T TOUCH AGAIN!", "hav warn", window.innerWidth / 2, lane2 ? Math.max(wb.top + 50, 60) : window.innerHeight * .34, 1500, lane2 ? .8 : .62);
-        playSfx("marcelo"); shake(); setTimeout(shake, 300); mTaps = 0;
+        var wb = world.getBoundingClientRect(), cx = window.innerWidth / 2, y0 = lane2 ? Math.max(wb.top + 50, 60) : window.innerHeight * .3;
+        playSfx("marcelo");
+        /* ses: "Don't... touch again! — Hey, you heard me? — Don't touch again!" */
+        pop("¡DON'T… TOUCH AGAIN!", "hav warn", cx, y0, 1400, lane2 ? .62 : .6); shake();
+        setTimeout(function () { pop("HEY, YOU HEARD ME?", "hav warn", cx, y0 + (lane2 ? 52 : 110), 950, lane2 ? .5 : .42); }, 1450);
+        setTimeout(function () { pop("DON'T TOUCH AGAIN!", "hav warn", cx, y0, 1300, lane2 ? .72 : .78); shake(); }, 2400);
       }
     }, true);
   }
@@ -498,6 +502,8 @@ window.addEventListener("load", function () {
       /* kuyruk karakterin tam üstünü göstersin */
       el.style.setProperty("--tail", (r.left + r.width / 2 - parseFloat(el.style.left)) + "px");
       fx.appendChild(el); playSfx("caleb");
+      /* ses: "Hey homie, watch out! — Hey, you better watch out bro!" */
+      setTimeout(function () { var t = el.querySelector(".b-txt"); if (t) t.textContent = "Hey, you better watch out bro!"; }, 1350);
       setTimeout(function () { el.remove(); }, 3000);
     }
     cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 800); } });
@@ -508,5 +514,68 @@ window.addEventListener("load", function () {
     cal.hit.addEventListener("click", function (e) {
       if (cTouch && Date.now() - cLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); say2(); }
     }, true);
+  }
+
+  /* --- Cesare (tabut): sallayınca tabut açılır, iskelet ekrana atılır --- */
+  var cof = charHit("coffin");
+  if (cof) {
+    var vid = null, scaring = false, scareLast = 0;
+    function prepVideo() {
+      if (vid) return;
+      vid = document.createElement("video");
+      vid.preload = "auto"; vid.playsInline = true; vid.setAttribute("playsinline", ""); vid.disablePictureInPicture = true;
+      vid.src = vid.canPlayType('video/webm; codecs="vp9, opus"') ? "video/cesare.webm" : "video/cesare.mp4";
+      vid.load();
+    }
+    function scare() {
+      if (scaring || calm.matches || Date.now() - scareLast < 12000) return;
+      scaring = true; prepVideo();
+      var ov = document.createElement("div"), v = vid, done = false, timers = [];
+      ov.className = "scare"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-label", "Sürpriz video, kapatmak için dokun");
+      ov.innerHTML = '<small>kapatmak için dokun</small>';
+      ov.insertBefore(v, ov.firstChild);
+      function end() {
+        if (done) return; done = true; timers.forEach(clearTimeout);
+        document.removeEventListener("keydown", onKey);
+        ov.classList.remove("on"); try { v.pause(); } catch (e) {}
+        setTimeout(function () { ov.remove(); v.currentTime = 0; scaring = false; scareLast = Date.now(); }, 350);
+      }
+      function onKey(e) { if (e.key === "Escape") end(); }
+      ov.addEventListener("click", end); document.addEventListener("keydown", onKey);
+      v.addEventListener("ended", end, { once: true });
+      document.body.appendChild(ov);
+      v.muted = !soundOn; v.currentTime = 0;
+      function started() {
+        if (done) return;
+        ov.classList.add("on");
+        timers.push(setTimeout(shake, 4300), setTimeout(shake, 4900), setTimeout(end, 7700));
+      }
+      v.addEventListener("playing", started, { once: true });
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {
+        /* tarayıcı sesli oynatmayı engelledi: sessiz oynat, ipucu göster */
+        v.muted = true; var q = v.play(); if (soundOn) hint(); if (q && q.catch) q.catch(end);
+      });
+      timers.push(setTimeout(function () { if (!ov.classList.contains("on")) end(); }, 4000));
+    }
+    cof.hit.addEventListener("pointerenter", prepVideo);
+    cof.hit.addEventListener("pointerdown", prepVideo);
+    /* sallama: art arda yön değiştiren hareketler */
+    var sx = 0, sy = 0, sdx = 0, sdy = 0, srev = 0, st0 = 0;
+    function sreset() { srev = 0; sdx = 0; sdy = 0; st0 = 0; }
+    cof.hit.addEventListener("pointerdown", function (e) { sx = e.clientX; sy = e.clientY; sreset(); });
+    cof.hit.addEventListener("pointermove", function (e) {
+      if (e.pointerType !== "mouse" && e.buttons === 0) return;
+      var mx = e.clientX - sx, my = e.clientY - sy;
+      if (Math.abs(mx) < 6 && Math.abs(my) < 6) return;
+      sx = e.clientX; sy = e.clientY;
+      var now = performance.now();
+      if (!st0 || now - st0 > 1800) { sreset(); st0 = now; }
+      var useX = Math.abs(mx) >= Math.abs(my), d = useX ? mx : my, prev = useX ? sdx : sdy;
+      if (prev && Math.sign(d) !== Math.sign(prev)) srev++;
+      if (useX) sdx = d; else sdy = d;
+      if (srev >= 6) { sreset(); scare(); }
+    });
+    cof.hit.addEventListener("click", function (e) { if (scaring) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
   }
 })();
