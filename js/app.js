@@ -483,21 +483,22 @@ window.addEventListener("load", function () {
     setTimeout(function () { el.remove(); }, life);
   }
 
-  /* --- Marcelo Martinez: bağlantı penceresini "Vazgeç" ile kapatırsan seslenir --- */
+  /* --- Marcelo Martinez: üstünde bekleyince (telefonda ilk dokunuşta) seslenir --- */
   var mar = charHit("orange");
   if (mar) {
-    var mOpened = false, mConfirmed = false, mBusy = 0, dlgEl = document.getElementById("go");
-    world.querySelectorAll(".hit").forEach(function (h) { h.addEventListener("click", function () { mOpened = h.dataset.id === "orange"; mConfirmed = false; }, true); });
-    document.getElementById("go-ok").addEventListener("click", function () { mConfirmed = true; });
-    dlgEl.addEventListener("close", function () {
-      if (!mOpened) return; mOpened = false;
-      if (mConfirmed || Date.now() < mBusy) return;
-      mBusy = Date.now() + 4000;
+    var mTimer = 0, mLast = 0, mTouch = false;
+    function mSay() {
+      if (Date.now() - mLast < 8000) return;
+      mLast = Date.now();
       /* ses: "Don't... touch again! — Hey, you heard me? — Don't touch again!" */
-      setTimeout(function () {
-        speak(mar, "Marcelo Martinez", [[0, "¡Don't… touch again!", 1], [1450, "Hey, you heard me?"], [2400, "Don't touch again!", 1]], "marcelo", 3700);
-      }, 250);
-    });
+      speak(mar, "Marcelo Martinez", [[0, "¡Don't… touch again!", 1], [1450, "Hey, you heard me?"], [2400, "Don't touch again!", 1]], "marcelo", 3700);
+    }
+    mar.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(mTimer); mTimer = setTimeout(mSay, 800); } });
+    mar.hit.addEventListener("pointerleave", function () { clearTimeout(mTimer); });
+    mar.hit.addEventListener("pointerdown", function (e) { mTouch = e.pointerType !== "mouse"; }, true);
+    mar.hit.addEventListener("click", function (e) {
+      if (mTouch && Date.now() - mLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); mSay(); }
+    }, true);
   }
 
   /* --- Caleb Grace: üstünde bekleyince / basılı tutunca uyarır --- */
