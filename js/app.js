@@ -463,25 +463,41 @@ window.addEventListener("load", function () {
   function charHit(id) { var h = world.querySelector('.hit[data-id="' + id + '"]'); return h ? { hit: h, sprite: h.closest(".char").querySelector(".sprite") } : null; }
 
   /* --- Marcelo Martinez: ikinci dokunuşta uyarı çıkar --- */
+  /* konuşma balonu: satırlar [gecikme_ms, metin, sarsıntı?] sırayla gösterilir */
+  function speak(ch, name, lines, sfx, life) {
+    var r = ch.sprite.getBoundingClientRect(), W = window.innerWidth;
+    var el = document.createElement("div");
+    el.className = "bubble";
+    el.style.setProperty("--life", (life - 450) + "ms");
+    el.innerHTML = '<span class="b-name"></span><span class="b-txt"></span><i class="eq" aria-hidden="true"><b></b><b></b><b></b><b></b></i>';
+    el.querySelector(".b-name").textContent = name;
+    var t = el.querySelector(".b-txt");
+    t.textContent = lines[0][1];
+    var x = Math.min(Math.max(r.left + r.width / 2, 165), W - 165);
+    el.style.left = x + "px"; el.style.top = Math.max(r.top - 6, 90) + "px";
+    el.style.setProperty("--tail", (r.left + r.width / 2 - x) + "px");
+    fx.appendChild(el); playSfx(sfx);
+    lines.forEach(function (l, i) {
+      setTimeout(function () { if (i) t.textContent = l[1]; if (l[2]) shake(); }, l[0]);
+    });
+    setTimeout(function () { el.remove(); }, life);
+  }
+
+  /* --- Marcelo Martinez: bağlantı penceresini "Vazgeç" ile kapatırsan seslenir --- */
   var mar = charHit("orange");
   if (mar) {
-    var mTaps = 0, mLast = 0, mBusy = 0;
-    mar.hit.addEventListener("click", function (e) {
-      var now = Date.now();
-      if (now < mBusy) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-      if (now - mLast > 20000) mTaps = 0;
-      mLast = now; mTaps++;
-      if (mTaps === 2) {
-        e.stopImmediatePropagation(); e.preventDefault(); mTaps = 0; mBusy = now + 3500;
-        var lane2 = window.matchMedia("(max-width: 899px), (max-aspect-ratio: 6/5), (max-height: 659px)").matches;
-        var wb = world.getBoundingClientRect(), cx = window.innerWidth / 2, y0 = lane2 ? Math.max(wb.top + 50, 60) : window.innerHeight * .3;
-        playSfx("marcelo");
-        /* ses: "Don't... touch again! — Hey, you heard me? — Don't touch again!" */
-        pop("¡DON'T… TOUCH AGAIN!", "hav warn", cx, y0, 1400, lane2 ? .62 : .6); shake();
-        setTimeout(function () { pop("HEY, YOU HEARD ME?", "hav warn", cx, y0 + (lane2 ? 52 : 110), 950, lane2 ? .5 : .42); }, 1450);
-        setTimeout(function () { pop("DON'T TOUCH AGAIN!", "hav warn", cx, y0, 1300, lane2 ? .72 : .78); shake(); }, 2400);
-      }
-    }, true);
+    var mOpened = false, mConfirmed = false, mBusy = 0, dlgEl = document.getElementById("go");
+    world.querySelectorAll(".hit").forEach(function (h) { h.addEventListener("click", function () { mOpened = h.dataset.id === "orange"; mConfirmed = false; }, true); });
+    document.getElementById("go-ok").addEventListener("click", function () { mConfirmed = true; });
+    dlgEl.addEventListener("close", function () {
+      if (!mOpened) return; mOpened = false;
+      if (mConfirmed || Date.now() < mBusy) return;
+      mBusy = Date.now() + 4000;
+      /* ses: "Don't... touch again! — Hey, you heard me? — Don't touch again!" */
+      setTimeout(function () {
+        speak(mar, "Marcelo Martinez", [[0, "¡Don't… touch again!", 1], [1450, "Hey, you heard me?"], [2400, "Don't touch again!", 1]], "marcelo", 3700);
+      }, 250);
+    });
   }
 
   /* --- Caleb Grace: üstünde bekleyince / basılı tutunca uyarır --- */
@@ -491,20 +507,8 @@ window.addEventListener("load", function () {
     function say2() {
       if (Date.now() - cLast < 8000) return;
       cLast = Date.now();
-      var r = cal.sprite.getBoundingClientRect(), W = window.innerWidth;
-      var el = document.createElement("div");
-      el.className = "bubble";
-      el.innerHTML = '<span class="b-name"></span><span class="b-txt"></span><i class="eq" aria-hidden="true"><b></b><b></b><b></b><b></b></i>';
-      el.querySelector(".b-name").textContent = "Caleb Grace";
-      el.querySelector(".b-txt").textContent = "Hey homie, watch out!";
-      el.style.left = Math.min(Math.max(r.left + r.width / 2, 165), W - 165) + "px";
-      el.style.top = (r.top - 6) + "px";
-      /* kuyruk karakterin tam üstünü göstersin */
-      el.style.setProperty("--tail", (r.left + r.width / 2 - parseFloat(el.style.left)) + "px");
-      fx.appendChild(el); playSfx("caleb");
       /* ses: "Hey homie, watch out! — Hey, you better watch out bro!" */
-      setTimeout(function () { var t = el.querySelector(".b-txt"); if (t) t.textContent = "Hey, you better watch out bro!"; }, 1350);
-      setTimeout(function () { el.remove(); }, 3000);
+      speak(cal, "Caleb Grace", [[0, "Hey homie, watch out!"], [1350, "Hey, you better watch out bro!"]], "caleb", 3000);
     }
     cal.hit.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") { clearTimeout(cTimer); cTimer = setTimeout(say2, 800); } });
     cal.hit.addEventListener("pointerleave", function () { clearTimeout(cTimer); });
@@ -533,10 +537,30 @@ window.addEventListener("load", function () {
       var ov = document.createElement("div"), v = vid, done = false, timers = [];
       ov.className = "scare"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-label", "Sürpriz video, kapatmak için dokun");
       ov.innerHTML = '<small>kapatmak için dokun</small>';
+      /* geniş ekranda dikey videonun iki yanı: videodan türeyen bulanık ışık + yükselen kıvılcımlar */
+      var wide = window.matchMedia("(min-aspect-ratio: 1/1)").matches, amb = null, actx = null, raf2 = 0, lastDraw = 0;
+      if (wide) {
+        amb = document.createElement("canvas"); amb.width = 64; amb.height = 114; amb.className = "amb"; amb.setAttribute("aria-hidden", "true");
+        actx = amb.getContext("2d"); ov.appendChild(amb);
+        var em = document.createElement("div"); em.className = "embers"; em.setAttribute("aria-hidden", "true");
+        for (var k = 0; k < 22; k++) {
+          var sp = document.createElement("i"), side = k % 2 ? 1 : -1;
+          sp.style.left = (50 + side * (22 + Math.random() * 28)) + "%";
+          sp.style.animationDelay = (-Math.random() * 6).toFixed(2) + "s"; sp.style.animationDuration = (4 + Math.random() * 4).toFixed(2) + "s";
+          sp.style.setProperty("--s", (2 + Math.random() * 4).toFixed(1) + "px"); sp.style.setProperty("--dx", ((Math.random() - .5) * 120).toFixed(0) + "px");
+          em.appendChild(sp);
+        }
+        ov.appendChild(em);
+      }
       ov.insertBefore(v, ov.firstChild);
+      function glow(ts) {
+        if (done || !actx) return;
+        if (ts - lastDraw > 66) { lastDraw = ts; try { actx.drawImage(v, 0, 0, 64, 114); } catch (e) {} }
+        raf2 = requestAnimationFrame(glow);
+      }
       function end() {
         if (done) return; done = true; timers.forEach(clearTimeout);
-        document.removeEventListener("keydown", onKey);
+        document.removeEventListener("keydown", onKey); cancelAnimationFrame(raf2);
         ov.classList.remove("on"); try { v.pause(); } catch (e) {}
         setTimeout(function () { ov.remove(); v.currentTime = 0; scaring = false; scareLast = Date.now(); }, 350);
       }
@@ -547,8 +571,8 @@ window.addEventListener("load", function () {
       v.muted = !soundOn; v.currentTime = 0;
       function started() {
         if (done) return;
-        ov.classList.add("on");
-        timers.push(setTimeout(shake, 4300), setTimeout(shake, 4900), setTimeout(end, 7700));
+        ov.classList.add("on"); if (actx) raf2 = requestAnimationFrame(glow);
+        timers.push(setTimeout(function () { shake(); ov.classList.add("lunge"); }, 4300), setTimeout(shake, 4900), setTimeout(function () { ov.classList.remove("lunge"); }, 5600), setTimeout(end, 7700));
       }
       v.addEventListener("playing", started, { once: true });
       var p = v.play();
