@@ -270,7 +270,7 @@ document.getElementById("yr").textContent = new Date().getFullYear();
     h.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse" && document.activeElement !== h) setActive(null); });
     h.addEventListener("focus", function () { if (h.matches(":focus-visible")) setActive(c); });
     h.addEventListener("blur", function () { setActive(null); });
-    h.addEventListener("click", function () { if (c.classList.contains("barking")) return; openGo(h.dataset.id, h); });
+    h.addEventListener("click", function () { if (c.classList.contains("barking")) { return; } openGo(h.dataset.id, h); });
     h.addEventListener("keydown", function (e) {
       var i = hits.indexOf(h), n = null;
       if (e.key === "ArrowRight") n = hits[Math.min(i + 1, hits.length - 1)];
@@ -331,7 +331,8 @@ window.addEventListener("load", function () {
 
   var started = false;
   function loadFx() {
-    if (started) return; started = true;
+    if (started) { return; }
+    started = true;
     var l = document.createElement("link"); l.rel = "stylesheet"; l.href = "css/fx.css" + q; document.head.appendChild(l);
     var s = document.createElement("script"); s.src = "js/fx.js" + q; s.async = true; document.body.appendChild(s);
   }
@@ -342,7 +343,9 @@ window.addEventListener("load", function () {
   }
   function apply(off, persist) {
     JFX.off = off; if (persist) { set("fx", off ? "off" : "on"); set("fxv", VER); }
-    label(); if (!off) loadFx(); notify();
+    label();
+    if (!off) { loadFx(); }
+    notify();
   }
 
   if (link) {

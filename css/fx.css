@@ -109,3 +109,7 @@
   .scare.kelepce { display: none; }
 }
 .snd[hidden], .fx[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .world.shake, .scare.kelepce.on:not(.black)::before, .scare.kelepce.on:not(.black)::after { animation: none; }
+}
