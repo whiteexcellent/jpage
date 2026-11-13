@@ -657,14 +657,29 @@ window.addEventListener("load", function () {
     var timer = 0, touch = false;
     var cfg = {
       name: "kelepce", wait: 20000, hardEnd: 12000,
-      shakes: [1500], aria: "Sürpriz sahne, kapatmak için dokun",
+      aria: "Kelepçe sahnesi, kapatmak için dokun",
       setup: function (overlay, timers) {
-        overlay.classList.add("police-scene");
-        var title = document.createElement("strong");
+        var title = document.createElement("div");
+        var headline = document.createElement("strong");
+        var name = document.createElement("span");
         title.className = "police-title";
-        title.textContent = "KELEPÇELENDİN";
+        headline.textContent = "KELEPÇELENDİN";
+        name.textContent = CHARACTERS[id].name;
+        title.append(headline, name);
         overlay.appendChild(title);
         timers.push(setTimeout(function () { title.classList.add("visible"); }, 2200));
+      },
+      outro: function (overlay, finish, timers) {
+        var box = document.createElement("div");
+        var message = document.createElement("b");
+        box.className = "k-out";
+        message.className = "k-t";
+        message.textContent = "…şaka, serbestsin.";
+        box.appendChild(message);
+        overlay.appendChild(box);
+        overlay.classList.add("black");
+        requestAnimationFrame(function () { box.classList.add("on"); });
+        timers.push(setTimeout(finish, 2400));
       }
     };
     police.hit.addEventListener("pointerenter", function (event) {
@@ -678,7 +693,7 @@ window.addEventListener("load", function () {
       touch = event.pointerType === "touch" || event.pointerType === "pen";
     }, true);
     police.hit.addEventListener("click", function (event) {
-      var show = touch && !calm.matches && event.detail !== 0 && Date.now() - (sceneLast[cfg.name] || 0) >= cfg.wait;
+      var show = touch && !calm.matches && event.detail !== 0 && Date.now() - (sceneLast[cfg.name] || 0) >= 60000;
       touch = false;
       if (!sceneBusy && !show) return;
       event.preventDefault();
