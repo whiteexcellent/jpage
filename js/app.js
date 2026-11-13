@@ -541,7 +541,8 @@ window.addEventListener("load", function () {
   }
   /* cfg: { name, aria, wait, embers, shakes:[ms], lunge:[on,off], outro(ov, finish) } */
   function scene(cfg) {
-    if (sceneBusy || calm.matches || Date.now() - (sceneLast[cfg.name] || 0) < (cfg.wait || 12000)) return;
+    var last = cfg.lastPlayed == null ? (sceneLast[cfg.name] || 0) : cfg.lastPlayed;
+    if (sceneBusy || calm.matches || Date.now() - last < (cfg.wait || 12000)) return;
     sceneBusy = true;
     var v = prepScene(cfg.name), ov = document.createElement("div"), done = false, timers = [];
     ov.className = "scare " + cfg.name; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-label", cfg.aria || "Sürpriz video, kapatmak için dokun");
@@ -576,11 +577,7 @@ window.addEventListener("load", function () {
       setTimeout(function () { ov.remove(); v.currentTime = 0; sceneBusy = false; sceneLast[cfg.name] = Date.now(); }, 450);
     }
     function onKey(e) { if (e.key === "Escape") end(); }
-    var overlayPressed = false;
-    ov.addEventListener("pointerdown", function () { overlayPressed = true; });
-    ov.addEventListener("click", function (event) {
-      if (!cfg.tapStarted || overlayPressed || event.detail === 0) end();
-    });
+    ov.addEventListener("click", end);
     document.addEventListener("keydown", onKey);
     v.addEventListener("ended", function () { if (done) return; if (cfg.outro) { cancelAnimationFrame(raf2); cfg.outro(ov, end, timers); } else end(); }, { once: true });
     document.body.appendChild(ov);
@@ -659,7 +656,7 @@ window.addEventListener("load", function () {
   ["graypolice", "suitman", "tiago", "mustache"].forEach(function (id) {
     var police = charHit(id);
     if (!police) return;
-    var timer = 0, tap = null, suppressClickUntil = 0;
+    var timer = 0, touch = false, lastTapScene = 0;
     var cfg = {
       name: "kelepce", wait: 20000, hardEnd: 12000,
       aria: "Kelepçe sahnesi, kapatmak için dokun",
@@ -706,26 +703,19 @@ window.addEventListener("load", function () {
     });
     police.hit.addEventListener("pointerleave", function () { clearTimeout(timer); });
     police.hit.addEventListener("pointerdown", function (event) {
-      suppressClickUntil = 0;
-      if (event.isPrimary && (event.pointerType === "touch" || event.pointerType === "pen")) {
-        tap = { id: event.pointerId, x: event.clientX, y: event.clientY };
-      }
+      touch = event.pointerType === "touch" || event.pointerType === "pen";
     }, true);
-    police.hit.addEventListener("pointercancel", function (event) {
-      if (tap && tap.id === event.pointerId) tap = null;
-    });
-    police.hit.addEventListener("pointerup", function (event) {
-      if (!tap || tap.id !== event.pointerId) return;
-      var moved = Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 12;
-      tap = null;
-      if (moved || calm.matches || sceneBusy || Date.now() - (sceneLast[cfg.name] || 0) < 60000) return;
-      suppressClickUntil = Date.now() + 700;
-      scene(Object.assign({}, cfg, { tapStarted: true }));
-    }, true);
+    police.hit.addEventListener("pointercancel", function () { touch = false; });
     police.hit.addEventListener("click", function (event) {
-      if (!sceneBusy && Date.now() >= suppressClickUntil) return;
+      var tapped = touch || event.pointerType === "touch" || event.pointerType === "pen"
+        || (event.detail > 0 && !event.pointerType && window.matchMedia("(pointer: coarse)").matches);
+      touch = false;
+      if (!sceneBusy && (!tapped || calm.matches || Date.now() - lastTapScene < 60000)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
+      if (sceneBusy) return;
+      scene(Object.assign({}, cfg, { lastPlayed: lastTapScene, wait: 60000 }));
+      lastTapScene = Date.now();
     }, true);
   });
 })();
