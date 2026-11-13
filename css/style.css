@@ -721,8 +721,29 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
 .k-t { font: 700 15px/1.2 var(--font-body); letter-spacing: .04em; color: rgba(246, 239, 220, .85); text-align: center; }
 
 /* Police scene overlay */
-.scare.police-scene {
-  background: linear-gradient(90deg, #32050e, #08080d 25%, #08080d 75%, #091d49);
+.scare.kelepce { background: #08080d; transition: opacity .3s, background-color .6s; }
+.scare.kelepce.black { background: #000; }
+.scare.kelepce .amb { display: none; }
+.scare.kelepce::before, .scare.kelepce::after {
+  content: "";
+  position: absolute;
+  inset: -20% 40% -20% -15%;
+  background: radial-gradient(ellipse at 45% 50%, rgba(218, 36, 64, .47), transparent 67%);
+  box-shadow: none;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .6s;
+}
+.scare.kelepce::after {
+  inset: -20% -15% -20% 40%;
+  background: radial-gradient(ellipse at 55% 50%, rgba(51, 105, 245, .52), transparent 67%);
+}
+.scare.kelepce.on:not(.black)::before { animation: police-light 4.4s ease-in-out infinite alternate; }
+.scare.kelepce.on:not(.black)::after { animation: police-light 4.4s ease-in-out -2.2s infinite alternate-reverse; }
+@keyframes police-light {
+  from { opacity: .24; transform: rotate(-12deg) translateY(-7%); }
+  to { opacity: .88; transform: rotate(12deg) translateY(7%); }
 }
 .police-title {
   position: absolute;
@@ -730,14 +751,20 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: .35rem;
   pointer-events: none;
   color: white;
-  font-size: clamp(1.6rem, 6vw, 3rem);
+  text-align: center;
   text-shadow: 0 2px 8px #000, 0 0 18px #000;
   opacity: 0;
-  transition: opacity 180ms ease;
+  transition: opacity .3s ease;
 }
+.police-title strong { font-size: clamp(1.6rem, 6vw, 3rem); }
+.police-title span { font: 600 clamp(.9rem, 3vw, 1.1rem)/1.3 var(--font-body); }
 .police-title.visible { opacity: 1; }
+.scare.black .police-title { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .police-title { transition: none; }
+  .scare.kelepce { display: none; }
 }
