@@ -672,7 +672,7 @@ dialog#warn::backdrop { background: rgba(6, 5, 3, .78); }
 .warn-sub { font-size: 13px; color: var(--muted); }
 .warn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .warn-list li { background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); border-radius: 12px; padding: 11px 14px; font: 600 14px/1.3 var(--font-body); color: #f1e6c4; }
-.fx-link { margin-left: .8em; padding: 4px 2px; background: none; border: 0; color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; opacity: .85; }
+.fx-link { pointer-events: auto; margin-left: .8em; padding: 6px 4px; background: none; border: 0; color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; opacity: .85; }
 .fx-link:hover { opacity: 1; }
 .fx-link:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
 @media (max-width: 600px) {

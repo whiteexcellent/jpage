@@ -63,7 +63,7 @@
     if (p && p.then) p.then(function () { if (!done) { done = true; clearTimeout(t); if (ctx.state === "running") go(); else hint(); } }, function () { if (!done) { done = true; clearTimeout(t); hint(); } });
   }
   function warm() {
-    if (warmed) return; warmed = true;
+    if (JFX.off || warmed) return; warmed = true;
     var pre = new Image(); pre.src = av("img/bark.webp"); if (pre.decode) pre.decode().catch(function () {});
     window.__barkPre = pre;
   }
@@ -204,7 +204,7 @@
     mar.hit.addEventListener("pointerleave", function () { clearTimeout(mTimer); });
     mar.hit.addEventListener("pointerdown", function (e) { mTouch = e.pointerType !== "mouse"; }, true);
     mar.hit.addEventListener("click", function (e) {
-      if (mTouch && Date.now() - mLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); mSay(); }
+      if (!JFX.off && mTouch && Date.now() - mLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); mSay(); }
     }, true);
   }
 
@@ -224,13 +224,14 @@
     var cTouch = false;
     cal.hit.addEventListener("pointerdown", function (e) { cTouch = e.pointerType !== "mouse"; }, true);
     cal.hit.addEventListener("click", function (e) {
-      if (cTouch && Date.now() - cLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); say2(); }
+      if (!JFX.off && cTouch && Date.now() - cLast >= 30000) { e.stopImmediatePropagation(); e.preventDefault(); say2(); }
     }, true);
   }
 
   /* ===== Tam ekran video sahneleri (Cesare, Hjalmarr) ===== */
   var vids = {}, sceneBusy = false, sceneLast = {};
   function prepScene(name) {
+    if (JFX.off) return null;
     if (vids[name]) return vids[name];
     var v = document.createElement("video");
     v.preload = "auto"; v.playsInline = true; v.setAttribute("playsinline", ""); v.disablePictureInPicture = true;
@@ -347,7 +348,7 @@
     hj.hit.addEventListener("pointerdown", function (e) { hjTouch = e.pointerType !== "mouse"; prepScene("hjalmarr"); }, true);
     hj.hit.addEventListener("click", function (e) {
       if (sceneBusy) { e.stopImmediatePropagation(); e.preventDefault(); return; }
-      if (hjTouch && Date.now() - (sceneLast.hjalmarr || 0) >= 60000) { e.stopImmediatePropagation(); e.preventDefault(); kidnap(); }
+      if (!JFX.off && hjTouch && Date.now() - (sceneLast.hjalmarr || 0) >= 60000) { e.stopImmediatePropagation(); e.preventDefault(); kidnap(); }
     }, true);
   }
   /* Police scene shares the existing video lifecycle and dismiss controls. */
