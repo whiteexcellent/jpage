@@ -657,3 +657,87 @@ dialog#go::backdrop { background: rgba(6, 5, 3, .7); }
   .go-card { padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
 }
 @keyframes sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ===== Gizli sürprizler ===== */
+.snd { position: fixed; right: 12px; top: 12px; z-index: 30; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--card-sub); background: rgba(16, 14, 11, .72); border: 1px solid var(--line); cursor: pointer; backdrop-filter: blur(6px); }
+.snd:hover { color: var(--accent-hi); border-color: var(--line-hi); }
+.snd:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.snd svg { grid-area: 1/1; width: 20px; height: 20px; }
+.snd .i-off, .snd.off .i-on { display: none; } .snd.off .i-off { display: block; }
+.fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+.hav { position: fixed; font: 900 1em/1 var(--font-body); font-size: calc(clamp(30px, 5.6vw, 112px) * var(--k, 1)); letter-spacing: .02em; color: #ff2a2a; -webkit-text-stroke: .16em #fff; stroke-linejoin: round; paint-order: stroke fill; text-shadow: 0 3px 0 #7a0b0b, 0 6px 14px rgba(0, 0, 0, .5); transform: translate(-50%, -50%) rotate(-12deg) scale(0); animation: hav 1s cubic-bezier(.2, 1.4, .4, 1) forwards; white-space: nowrap; }
+@keyframes hav { 0% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(0); opacity: 1; } 18% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(1.18); } 30% { transform: translate(-50%, -50%) rotate(var(--rot, -13deg)) scale(1); } 80% { opacity: 1; } 100% { transform: translate(-50%, -64%) rotate(var(--rot, -13deg)) scale(1); opacity: 0; } }
+.char-dog.barking .dog-sit { visibility: hidden; }
+.bark-fig { object-fit: contain; object-position: 50% 100%; filter: brightness(.97); }
+.char-dog .hit { touch-action: pan-x; }
+.world.shake { animation: shake .22s linear; }
+@keyframes shake { 0%, 100% { translate: 0 0; } 20% { translate: -5px 2px; } 40% { translate: 5px -2px; } 60% { translate: -3px 1px; } 80% { translate: 3px -1px; } }
+@media (prefers-reduced-motion: reduce) { .hav { animation-duration: 1s; } }
+
+.snd-hint { position: fixed; right: 12px; top: 60px; z-index: 31; max-width: min(260px, calc(100vw - 24px)); padding: 8px 12px; border-radius: 10px; background: rgba(16, 14, 11, .92); border: 1px solid var(--line-hi); color: var(--accent-hi); font: 600 13px/1.2 var(--font-body); opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .2s; pointer-events: none; }
+.snd-hint.on { opacity: 1; transform: none; }
+.snd.attn { color: var(--accent-fg); background: var(--accent); border-color: transparent; animation: pulse 1s ease-in-out 3; }
+@keyframes pulse { 50% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .snd.attn { animation: none; } }
+
+.hav.warn { white-space: nowrap; }
+.bubble { position: fixed; transform: translate(-50%, -100%); width: max-content; max-width: min(330px, 86vw); padding: 12px 16px 13px; border-radius: 16px; background: rgba(18, 15, 11, .94); border: 1px solid rgba(230, 195, 106, .45); box-shadow: 0 14px 40px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; align-items: center; animation: bub .32s cubic-bezier(.2, 1.3, .4, 1) backwards, bubout .35s ease var(--life, 2.55s) forwards; min-width: min(250px, 80vw); }
+.bubble::after { content: ""; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -7px; width: 12px; height: 12px; background: rgba(18, 15, 11, .94); border-right: 1px solid rgba(230, 195, 106, .45); border-bottom: 1px solid rgba(230, 195, 106, .45); transform: translateX(-50%) rotate(45deg); }
+.b-name { grid-column: 1; font: 700 11px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.b-txt { grid-column: 1; font: 700 clamp(16px, 1.25vw, 20px)/1.25 var(--font-body); color: #f6efdc; }
+.eq { grid-column: 2; grid-row: 1 / span 2; display: flex; align-items: center; gap: 3px; height: 22px; }
+.eq b { width: 3px; height: 100%; border-radius: 2px; background: var(--accent); transform-origin: 50% 50%; animation: eq .7s ease-in-out infinite; }
+.eq b:nth-child(2) { animation-delay: -.2s; } .eq b:nth-child(3) { animation-delay: -.45s; } .eq b:nth-child(4) { animation-delay: -.1s; }
+@keyframes eq { 0%, 100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+@keyframes bub { from { transform: translate(-50%, -85%) scale(.9); opacity: 0; } }
+@keyframes bubout { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bubble { animation: bubout .35s ease 2.55s forwards; } .eq b { animation: none; transform: scaleY(.6); } }
+
+.scare { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(0, 0, 0, .9); opacity: 0; transition: opacity .3s; cursor: pointer; overflow: hidden; }
+.scare.on { opacity: 1; }
+.scare video { width: min(100vw, 56.25vh); height: auto; aspect-ratio: 9 / 16; max-height: 100vh; object-fit: contain; -webkit-mask-image: radial-gradient(ellipse 66% 62% at 50% 50%, #000 60%, transparent 100%), linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%); -webkit-mask-composite: source-in; mask-image: radial-gradient(ellipse 66% 62% at 50% 50%, #000 60%, transparent 100%), linear-gradient(90deg, transparent 0, #000 22%, #000 78%, transparent 100%); mask-composite: intersect; }
+.scare small { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; font: 600 12px var(--font-body); color: rgba(255, 255, 255, .5); letter-spacing: .08em; }
+.char-coffin .hit { touch-action: pan-x; }
+
+.scare .amb { position: absolute; left: -8%; top: -8%; width: 116%; height: 116%; filter: blur(46px) saturate(1.35) brightness(.75); opacity: 0; transition: opacity 1.2s; pointer-events: none; }
+.scare.on .amb { opacity: .55; }
+.scare video { position: relative; z-index: 1; }
+.embers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.embers i { position: absolute; bottom: -12px; width: var(--s); height: var(--s); border-radius: 50%; background: #ffb347; box-shadow: 0 0 8px 2px rgba(255, 150, 40, .6); opacity: 0; animation: ember 6s linear infinite; }
+@keyframes ember { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: .9; } 100% { transform: translate(var(--dx), -108vh); opacity: 0; } }
+.scare::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 3; box-shadow: inset 0 0 22vmin 4vmin rgba(150, 0, 0, .85); opacity: 0; transition: opacity .15s; }
+.scare.lunge::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .embers { display: none; } }
+
+/* Hjalmarr sahnesi */
+.scare.hjalmarr video { transition: opacity .5s; }
+.scare.black { background: #000; }
+.scare.black video, .scare.black .amb, .scare.black small { opacity: 0; transition: opacity .6s; }
+.k-out { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 22px; opacity: 0; transition: opacity .9s .5s; z-index: 4; pointer-events: none; }
+.k-out.on { opacity: 1; }
+.k-face { width: 92px; height: 92px; border-radius: 50%; overflow: hidden; border: 1px solid rgba(255, 255, 255, .12); background: #0b0a08; box-shadow: 0 0 0 10px rgba(0, 0, 0, .6); filter: brightness(.45) blur(1.5px) sepia(.4); transition: filter 1s; }
+.k-face img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; transform: scale(2.1); transform-origin: 50% 0; }
+.k-out.back .k-face { filter: none; }
+.k-t { font: 700 15px/1.2 var(--font-body); letter-spacing: .04em; color: rgba(246, 239, 220, .85); text-align: center; }
+
+/* Police scene overlay */
+.scare.police-scene {
+  background: linear-gradient(90deg, #32050e, #08080d 25%, #08080d 75%, #091d49);
+}
+.police-title {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  color: white;
+  font-size: clamp(1.6rem, 6vw, 3rem);
+  text-shadow: 0 2px 8px #000, 0 0 18px #000;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.police-title.visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .police-title { transition: none; }
+}
