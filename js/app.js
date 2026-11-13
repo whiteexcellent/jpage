@@ -576,7 +576,12 @@ window.addEventListener("load", function () {
       setTimeout(function () { ov.remove(); v.currentTime = 0; sceneBusy = false; sceneLast[cfg.name] = Date.now(); }, 450);
     }
     function onKey(e) { if (e.key === "Escape") end(); }
-    ov.addEventListener("click", end); document.addEventListener("keydown", onKey);
+    var overlayPressed = false;
+    ov.addEventListener("pointerdown", function () { overlayPressed = true; });
+    ov.addEventListener("click", function (event) {
+      if (!cfg.tapStarted || overlayPressed || event.detail === 0) end();
+    });
+    document.addEventListener("keydown", onKey);
     v.addEventListener("ended", function () { if (done) return; if (cfg.outro) { cancelAnimationFrame(raf2); cfg.outro(ov, end, timers); } else end(); }, { once: true });
     document.body.appendChild(ov);
     v.muted = !soundOn; v.currentTime = 0;
@@ -654,7 +659,7 @@ window.addEventListener("load", function () {
   ["graypolice", "suitman", "tiago", "mustache"].forEach(function (id) {
     var police = charHit(id);
     if (!police) return;
-    var timer = 0, touch = false;
+    var timer = 0, tap = null, suppressClickUntil = 0;
     var cfg = {
       name: "kelepce", wait: 20000, hardEnd: 12000,
       aria: "Kelepçe sahnesi, kapatmak için dokun",
@@ -701,15 +706,26 @@ window.addEventListener("load", function () {
     });
     police.hit.addEventListener("pointerleave", function () { clearTimeout(timer); });
     police.hit.addEventListener("pointerdown", function (event) {
-      touch = event.pointerType === "touch" || event.pointerType === "pen";
+      suppressClickUntil = 0;
+      if (event.isPrimary && (event.pointerType === "touch" || event.pointerType === "pen")) {
+        tap = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      }
+    }, true);
+    police.hit.addEventListener("pointercancel", function (event) {
+      if (tap && tap.id === event.pointerId) tap = null;
+    });
+    police.hit.addEventListener("pointerup", function (event) {
+      if (!tap || tap.id !== event.pointerId) return;
+      var moved = Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 12;
+      tap = null;
+      if (moved || calm.matches || sceneBusy || Date.now() - (sceneLast[cfg.name] || 0) < 60000) return;
+      suppressClickUntil = Date.now() + 700;
+      scene(Object.assign({}, cfg, { tapStarted: true }));
     }, true);
     police.hit.addEventListener("click", function (event) {
-      var show = touch && !calm.matches && event.detail !== 0 && Date.now() - (sceneLast[cfg.name] || 0) >= 60000;
-      touch = false;
-      if (!sceneBusy && !show) return;
+      if (!sceneBusy && Date.now() >= suppressClickUntil) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (show && !sceneBusy) scene(cfg);
     }, true);
   });
 })();
