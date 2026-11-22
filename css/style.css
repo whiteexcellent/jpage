@@ -138,6 +138,8 @@ body {
 .char:nth-child(6) .sprite { animation-delay: .30s; }
 .char:nth-child(7) .sprite { animation-delay: .35s; }
 .char:nth-child(8) .sprite { animation-delay: .40s; }
+.char:nth-child(9) .sprite { animation-delay: .45s; }
+.char:nth-child(10) .sprite { animation-delay: .50s; }
 @keyframes rise { from { transform: translateY(14px); } to { transform: none; } }
 
 .fig, .ref {

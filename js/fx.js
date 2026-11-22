@@ -352,7 +352,7 @@
     }, true);
   }
   /* Police scene shares the existing video lifecycle and dismiss controls. */
-  ["graypolice", "suitman", "tiago", "mustache"].forEach(function (id) {
+  ["graypolice", "suitman", "vincenzo", "tiago", "mustache"].forEach(function (id) {
     var police = charHit(id);
     if (!police) return;
     var timer = 0, touch = false, lastTapScene = 0;

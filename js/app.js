@@ -6,6 +6,7 @@ const CHARACTERS = {
   orange:     { name: "Marcelo Martinez",     url: "https://eightbornv.com/fandom/marcelo-martinez-e7594325b8" },
   graypolice: { name: "Lion Williams",        url: "https://eightbornv.com/fandom/lion-williams-636d4caabb" },
   suitman:    { name: "Kıdemli Yüzbaşı Martinez",   url: "https://eightbornv.com/fandom/kidemli-yuzbasi-martinez-ef7dceaa06" },
+  vincenzo:   { name: "Vincenzo Spagetti",   url: "https://eightbornv.com/fandom/vincenzo-spagetti" },
   dog:        { name: "Bob (K9)",             url: "https://eightbornv.com/fandom/bob-5cd9a8ef4a" },
   black:      { name: "Caleb Grace",          url: "https://eightbornv.com/fandom/caleb-grace-2f68f94afd" },
   beard:      { name: "Hjalmarr",             url: "https://eightbornv.com/fandom/hjalmarr-231cd2981c" },
